@@ -140,4 +140,4 @@ We welcome contributions to enhance BABEL. To contribute:
 
 ## License
 
-BABEL is licensed under the [MIT License](LICENSE). You’re free to use, modify, and distribute this software.
+BABEL is [Unlicensed](LICENSE). You’re free to to copy, modify, publish, use, compile, sell, or distribute this software this software.
