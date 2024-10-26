@@ -1,78 +1,70 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../firebase';
 
-const RegisterWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+const UserHomeWrapper = styled.div`
   padding: 2rem;
 `;
 
-const Form = styled.form`
+const FeedWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  width: 300px;
 `;
 
-const Input = styled.input`
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.accent};
+const Post = styled.div`
+  background-color: ${props => props.theme.secondaryBackground};
+  padding: 1rem;
   border-radius: 5px;
 `;
 
-const Register = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+const UserHome = () => {
+  const [user, loading] = useAuthState(auth);
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle registration logic here
-    console.log('Registration submitted', { username, email, password, confirmPassword });
-  };
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return;
+    
+    // Fetch posts from Firebase
+    const fetchPosts = async () => {
+      try {
+        // Add Firebase fetch logic here
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPosts();
+  }, [user, loading]);
+
+  if (loading || isLoading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
 
   return (
-    <RegisterWrapper>
-      <h2>Register for BABEL</h2>
-      <Form onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <Input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <Input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Register</button>
-      </Form>
-      <p>
-        Already have an account? <Link to="/login">Login here</Link>
-      </p>
-    </RegisterWrapper>
+    <UserHomeWrapper>
+      <h2>Welcome, {user.displayName || 'User'}!</h2>
+      <nav>
+        <Link to="/profile">Profile</Link> |
+        <Link to="/search">Search</Link> |
+        <Link to="/collections">My Collections</Link>
+      </nav>
+      <h3>Recent Activity</h3>
+      <FeedWrapper>
+        {posts.map(post => (
+          <Post key={post.id}>
+            <strong>{post.user}</strong>
+            <p>{post.content}</p>
+          </Post>
+        ))}
+      </FeedWrapper>
+    </UserHomeWrapper>
   );
 };
 
-export default Register;
+export default UserHome;

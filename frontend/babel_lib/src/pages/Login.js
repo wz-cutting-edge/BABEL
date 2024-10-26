@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import api from '../services/api';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 
