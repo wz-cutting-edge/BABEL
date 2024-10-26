@@ -1,6 +1,9 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, database } from '../firebase';
+import { ref, get } from 'firebase/database';
 
 const DashboardWrapper = styled.div`
   padding: 2rem;
@@ -21,6 +24,23 @@ const DashboardCard = styled.div`
 `;
 
 const AdminDashboard = () => {
+  const [user, loading] = useAuthState(auth);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) return;
+      const userRef = ref(database, `users/${user.uid}`);
+      const snapshot = await get(userRef);
+      setIsAdmin(snapshot.val()?.role === 'admin');
+    };
+    
+    checkAdminRole();
+  }, [user]);
+
+  if (loading) return <div>Loading...</div>;
+  if (!user || !isAdmin) return <Navigate to="/" />;
+
   return (
     <DashboardWrapper>
       <h2>Admin Dashboard</h2>

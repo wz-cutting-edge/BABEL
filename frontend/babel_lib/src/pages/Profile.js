@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, database } from '../firebase';
+import { Navigate } from 'react-router-dom';
+import { updateProfile } from 'firebase/auth';
+import { ref, set, serverTimestamp } from 'firebase/database';
 
 const ProfileWrapper = styled.div`
   padding: 2rem;
@@ -42,22 +47,38 @@ const Textarea = styled.textarea`
 `;
 
 const Profile = () => {
-  const [username, setUsername] = useState('JohnDoe');
-  const [email, setEmail] = useState('johndoe@example.com');
-  const [bio, setBio] = useState('I love reading and watching movies!');
+  const [user] = useAuthState(auth);
+  const [username, setUsername] = useState(user?.displayName || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [bio, setBio] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle profile update logic here
-    console.log('Profile updated', { username, email, bio });
+    try {
+      await updateProfile(auth.currentUser, { displayName: username });
+      const userRef = ref(database, `users/${user.uid}`);
+      await set(userRef, {
+        username,
+        bio,
+        email: user.email,
+        updatedAt: serverTimestamp()
+      });
+      console.log('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <ProfileWrapper>
-      <ProfileImage src="/placeholder.svg?height=150&width=150" alt="Profile" />
+      <ProfileImage src={user.photoURL || "/placeholder.svg?height=150&width=150"} alt="Profile" />
       <ProfileInfo>
-        <h2>{username}</h2>
-        <p>{email}</p>
+        <h2>{user.displayName}</h2>
+        <p>{user.email}</p>
       </ProfileInfo>
       <h3>Edit Profile</h3>
       <ProfileForm onSubmit={handleSubmit}>
@@ -71,7 +92,7 @@ const Profile = () => {
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          disabled
         />
         <Textarea
           placeholder="Bio"

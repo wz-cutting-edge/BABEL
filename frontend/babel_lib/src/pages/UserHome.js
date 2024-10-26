@@ -3,6 +3,8 @@ import { Link, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const UserHomeWrapper = styled.div`
   padding: 2rem;
@@ -32,7 +34,14 @@ const UserHome = () => {
     // Fetch posts from Firebase
     const fetchPosts = async () => {
       try {
-        // Add Firebase fetch logic here
+        const postsRef = collection(db, 'posts');
+        const q = query(postsRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const fetchedPosts = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setPosts(fetchedPosts);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching posts:', error);

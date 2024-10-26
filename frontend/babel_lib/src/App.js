@@ -28,15 +28,14 @@ function App() {
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <Router>
-        <Header toggleTheme={toggleTheme} />
+        <Header user={user} toggleTheme={toggleTheme} />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={user ? <UserHome /> : <Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
           <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/user-home" element={user ? <UserHome /> : <Navigate to="/login" />} />
-          <Route path="/admin-dashboard" element={user ? <AdminDashboard /> : <Navigate to="/login" />} />
+          <Route path="/admin-dashboard" element={user?.isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
           <Route path="/collections" element={user ? <Collections /> : <Navigate to="/login" />} />
         </Routes>
         <Footer />

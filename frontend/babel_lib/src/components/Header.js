@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { auth } from '../firebase';
 
 const HeaderWrapper = styled.header`
   background-color: ${props => props.theme.secondaryBackground};
@@ -20,14 +21,25 @@ const Nav = styled.nav`
   gap: 1rem;
 `;
 
-const Header = ({ toggleTheme }) => {
+const Header = ({ user, toggleTheme }) => {
   return (
     <HeaderWrapper>
       <Logo>BABEL</Logo>
       <Nav>
         <Link to="/">Home</Link>
         <Link to="/search">Search</Link>
-        <Link to="/login">Login</Link>
+        {user ? (
+          <>
+            <Link to="/profile">Profile</Link>
+            <Link to="/collections">Collections</Link>
+            <button onClick={() => auth.signOut()}>Logout</button>
+          </>
+        ) : (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
+          </>
+        )}
         <button onClick={toggleTheme}>Toggle Theme</button>
       </Nav>
     </HeaderWrapper>
