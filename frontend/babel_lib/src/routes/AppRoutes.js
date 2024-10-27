@@ -11,6 +11,9 @@ import Search from '../pages/Search';
 import Collections from '../pages/Collections';
 import Profile from '../pages/Profile';
 import MediaUploader from '../pages/MediaUploader';
+import CustomerSupport from '../pages/CustomerSupport';
+import UserReports from '../pages/UserReports';
+import Analytics from '../pages/Analytics';
 
 const ProtectedRoute = ({ children, isAllowed, redirectPath = '/' }) => {
   if (!isAllowed) {
@@ -50,6 +53,30 @@ const AppRoutes = () => {
       <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
       <Route path="/collections" element={user ? <Collections /> : <Navigate to="/login" />} />
       <Route path="/media-uploader" element={isAdmin ? <MediaUploader /> : <Navigate to="/" />} />
+      <Route 
+        path="/customer-support" 
+        element={
+          <ProtectedRoute isAllowed={isAdmin}>
+            <CustomerSupport />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/user-reports" 
+        element={
+          <ProtectedRoute isAllowed={isAdmin}>
+            <UserReports />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/analytics" 
+        element={
+          <ProtectedRoute isAllowed={isAdmin}>
+            <Analytics />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 };
