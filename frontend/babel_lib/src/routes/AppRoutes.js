@@ -15,30 +15,58 @@ import CustomerSupport from '../pages/CustomerSupport';
 import UserReports from '../pages/UserReports';
 import Analytics from '../pages/Analytics';
 
-const ProtectedRoute = ({ children, isAllowed, redirectPath = '/' }) => {
-  if (!isAllowed) {
-    return <Navigate to={redirectPath} replace />;
-  }
+const AdminRoute = ({ children }) => {
+  const { user, isAdmin, loading } = useAuth();
+  
+  if (loading) return <Loading />;
+  if (!user || !isAdmin) return <Navigate to="/" />;
+  
   return children;
 };
 
 const AppRoutes = () => {
   const { user, isAdmin } = useAuth();
 
+  // Determine home component based on user type
+  const getHomeComponent = () => {
+    if (!user) return <Navigate to="/login" />;
+    if (isAdmin) return <Navigate to="/admin-dashboard" />;
+    return <UserHome />;
+  };
+
   return (
     <Routes>
-      <Route path="/" element={user ? <UserHome /> : <Navigate to="/login" />} />
+      {/* Public Routes */}
+      <Route path="/" element={getHomeComponent()} />
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
       <Route path="/signup" element={!user ? <Register /> : <Navigate to="/" />} />
       
       {/* Admin Routes */}
-      {isAdmin && (
-        <>
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/media-upload" element={<MediaUploader />} />
-          <Route path="/analytics" element={<Analytics />} />
-        </>
-      )}
+      <Route path="/admin-dashboard" element={
+        <AdminRoute>
+          <AdminDashboard />
+        </AdminRoute>
+      } />
+      <Route path="/customer-support" element={
+        <AdminRoute>
+          <CustomerSupport />
+        </AdminRoute>
+      } />
+      <Route path="/user-reports" element={
+        <AdminRoute>
+          <UserReports />
+        </AdminRoute>
+      } />
+      <Route path="/analytics" element={
+        <AdminRoute>
+          <Analytics />
+        </AdminRoute>
+      } />
+      <Route path="/media-uploader" element={
+        <AdminRoute>
+          <MediaUploader />
+        </AdminRoute>
+      } />
 
       {/* Protected Routes */}
       <Route path="/search" element={<Search />} />
