@@ -1,33 +1,44 @@
 import { useState, useEffect } from 'react';
-
-const lightTheme = {
-  background: '#ECDFCC',
-  secondaryBackground: '#697565',
-  accent: '#3C3D37',
-  text: '#1E201E',
-};
-
-const darkTheme = {
-  background: '#1E201E',
-  secondaryBackground: '#3C3D37',
-  accent: '#697565',
-  text: '#ECDFCC',
-};
+import { lightTheme, darkTheme } from '../theme';
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState(lightTheme);
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    // Return darkTheme if no theme is saved or if saved theme is 'dark'
+    return savedTheme === 'light' ? lightTheme : darkTheme;
+  });
+
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    // Return true if no theme is saved or if saved theme is 'dark'
+    return savedTheme === 'light' ? false : true;
+  });
 
   const toggleTheme = () => {
-    setTheme(theme === lightTheme ? darkTheme : lightTheme);
-    localStorage.setItem('theme', theme === lightTheme ? 'dark' : 'light');
+    const newTheme = theme === lightTheme ? darkTheme : lightTheme;
+    setTheme(newTheme);
+    setIsDarkMode(!isDarkMode);
+    localStorage.setItem('theme', newTheme === darkTheme ? 'dark' : 'light');
   };
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      const newTheme = e.matches ? darkTheme : lightTheme;
+      setTheme(newTheme);
+      setIsDarkMode(e.matches);
+      localStorage.setItem('theme', e.matches ? 'dark' : 'light');
+    };
+
+    if (!localStorage.getItem('theme')) {
+      localStorage.setItem('theme', 'dark'); // Set default to dark
       setTheme(darkTheme);
+      setIsDarkMode(true);
     }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
   }, []);
 
-  return { theme, toggleTheme };
+  return { theme, isDarkMode, toggleTheme };
 };
