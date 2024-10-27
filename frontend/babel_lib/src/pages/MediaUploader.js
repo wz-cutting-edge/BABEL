@@ -85,26 +85,6 @@ const Progress = styled.div`
   transition: width 0.3s ease;
 `;
 
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 400px;
-  margin: 0 auto;
-`;
-
-const Input = styled.input`
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.accent};
-  border-radius: 5px;
-`;
-
-const Select = styled.select`
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.accent};
-  border-radius: 5px;
-`;
-
 const MediaUploader = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
