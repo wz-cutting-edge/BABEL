@@ -23,60 +23,29 @@ const ProtectedRoute = ({ children, isAllowed, redirectPath = '/' }) => {
 };
 
 const AppRoutes = () => {
-  const { user, isAdmin, loading } = useAuth();
-
-  if (loading) return <Loading />;
+  const { user, isAdmin } = useAuth();
 
   return (
     <Routes>
-      <Route 
-        path="/" 
-        element={
-          user ? (
-            isAdmin ? <Navigate to="/admin-dashboard" /> : <UserHome />
-          ) : (
-            <Home />
-          )
-        } 
-      />
-      <Route 
-        path="/admin-dashboard" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="/search" element={<Search />} />
+      <Route path="/" element={user ? <UserHome /> : <Navigate to="/login" />} />
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-      <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+      <Route path="/signup" element={!user ? <Register /> : <Navigate to="/" />} />
+      
+      {/* Admin Routes */}
+      {isAdmin && (
+        <>
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/media-upload" element={<MediaUploader />} />
+          <Route path="/analytics" element={<Analytics />} />
+        </>
+      )}
+
+      {/* Protected Routes */}
+      <Route path="/search" element={<Search />} />
       <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-      <Route path="/collections" element={user ? <Collections /> : <Navigate to="/login" />} />
-      <Route path="/media-uploader" element={isAdmin ? <MediaUploader /> : <Navigate to="/" />} />
-      <Route 
-        path="/customer-support" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <CustomerSupport />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/user-reports" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <UserReports />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/analytics" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <Analytics />
-          </ProtectedRoute>
-        } 
-      />
+      
+      {/* Catch-all route */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };
