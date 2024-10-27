@@ -62,6 +62,7 @@ yarn-error.log*
 logs/
 *.log
 debug.log
+context.txt
 
 # Runtime data
 pids/
