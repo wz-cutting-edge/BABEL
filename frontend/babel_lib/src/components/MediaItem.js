@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { Book, Film, FileText } from 'lucide-react';
 
@@ -29,8 +29,8 @@ const Author = styled.p`
   color: ${props => props.theme.text}aa;
 `;
 
-const MediaItem = ({ type, title, author }) => {
-  const getIcon = () => {
+const MediaItem = React.memo(({ type, title, author }) => {
+  const getIcon = useCallback(() => {
     switch (type) {
       case 'book':
         return <Book size={24} />;
@@ -41,7 +41,7 @@ const MediaItem = ({ type, title, author }) => {
       default:
         return <Book size={24} />;
     }
-  };
+  }, [type]);
 
   return (
     <Item>
@@ -52,6 +52,6 @@ const MediaItem = ({ type, title, author }) => {
       </Details>
     </Item>
   );
-};
+});
 
 export default MediaItem;

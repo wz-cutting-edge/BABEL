@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const LoginWrapper = styled.div`
   display: flex;
@@ -34,8 +35,22 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = doc(db, 'users', userCredential.user.uid);
+      const userSnap = await getDoc(userDoc);
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        // Add a small delay to ensure admin status is set in App component
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (userData.role === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/');
+        }
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       setError(error.message);
     }

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, database } from '../firebase';
-import { ref, get } from 'firebase/database';
+import { useAuth } from '../contexts/AuthContext';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const DashboardWrapper = styled.div`
   padding: 2rem;
@@ -24,19 +24,7 @@ const DashboardCard = styled.div`
 `;
 
 const AdminDashboard = () => {
-  const [user, loading] = useAuthState(auth);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!user) return;
-      const userRef = ref(database, `users/${user.uid}`);
-      const snapshot = await get(userRef);
-      setIsAdmin(snapshot.val()?.role === 'admin');
-    };
-    
-    checkAdminRole();
-  }, [user]);
+  const { user, loading, isAdmin } = useAuth();
 
   if (loading) return <div>Loading...</div>;
   if (!user || !isAdmin) return <Navigate to="/" />;
@@ -45,11 +33,11 @@ const AdminDashboard = () => {
     <DashboardWrapper>
       <h2>Admin Dashboard</h2>
       <nav>
-        <Link to="/customer-support">Customer Support</Link> |
-        <Link to="/user-reports">User Reports</Link> |
-        <Link to="/media-uploader">Media Uploader</Link> |
-        <Link to="/analytics">Analytics</Link> |
-        <Link to="/">Logout</Link>
+        <Link to="/customer-support" style={{ marginRight: '1rem' }}>Customer Support</Link>
+        <Link to="/user-reports" style={{ marginRight: '1rem' }}>User Reports</Link>
+        <Link to="/media-uploader" style={{ marginRight: '1rem' }}>Media Uploader</Link>
+        <Link to="/analytics" style={{ marginRight: '1rem' }}>Analytics</Link>
+        <Link to="/" onClick={() => auth.signOut()}>Logout</Link>
       </nav>
       <DashboardGrid>
         <DashboardCard>

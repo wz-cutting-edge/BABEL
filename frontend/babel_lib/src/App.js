@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebase';
@@ -7,40 +7,38 @@ import { useTheme } from './hooks/useTheme';
 import GlobalStyle from './styles/GlobalStyle';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import UserHome from './pages/UserHome';
-import AdminDashboard from './pages/AdminDashboard';
-import Search from './pages/Search';
-import Collections from './pages/Collections';
-import Profile from './pages/Profile';
+import Loading from './components/Loading';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProfiledComponent } from './utils/Profiler';
+import AppRoutes from './routes/AppRoutes';
+
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const UserHome = lazy(() => import('./pages/UserHome'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Search = lazy(() => import('./pages/Search'));
+const Collections = lazy(() => import('./pages/Collections'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 function App() {
-  const [user, loading] = useAuthState(auth);
   const { theme, toggleTheme } = useTheme();
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyle />
-      <Router>
-        <Header user={user} toggleTheme={toggleTheme} />
-        <Routes>
-          <Route path="/" element={user ? <UserHome /> : <Home />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-          <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
-          <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/admin-dashboard" element={user?.isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
-          <Route path="/collections" element={user ? <Collections /> : <Navigate to="/login" />} />
-        </Routes>
-        <Footer />
-      </Router>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <Router>
+          <ProfiledComponent id="App">
+            <Header toggleTheme={toggleTheme} />
+            <Suspense fallback={<Loading />}>
+              <AppRoutes />
+            </Suspense>
+            <Footer />
+          </ProfiledComponent>
+        </Router>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

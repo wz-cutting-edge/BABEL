@@ -1,7 +1,10 @@
-# Dependencies
+# Node and npm
 node_modules/
-/.pnp
+.pnp/
 .pnp.js
+*.tgz
+.npm
+.yarn-integrity
 
 # Testing
 /coverage
@@ -10,29 +13,40 @@ node_modules/
 /build
 /dist
 
-# Environment variables
+# Environment Variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.test
+.env.production
+.env*.local
 
 # Firebase
 firebase-config.js
+firebase-config.json
 serviceAccountKey.json
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+.firebase/
+firebase-debug.log
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-logs
+logs/
 *.log
+debug.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# IDE and Editor Configurations
+.idea/
+.vscode/
+*.swp
+*.swo
 
 # OS generated files
 .DS_Store
@@ -43,37 +57,41 @@ logs
 ehthumbs.db
 Thumbs.db
 
-# Backend
+# Backup files
+*.bak
+*.backup
+*~
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Python and Django
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.egg-info/
+.eggs/
+.installed.cfg
+local_settings.py
+db.sqlite3
+media/
 develop-eggs/
 downloads/
 eggs/
-.eggs/
 lib/
 lib64/
 parts/
 sdist/
 var/
 wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Django
+# Django translations
 *.pot
-*.pyc
-local_settings.py
-db.sqlite3
-media/
-
-# Backup files
-*.bak
-*.backup
-*~
 
 # Additional sensitive data protection
 *.key

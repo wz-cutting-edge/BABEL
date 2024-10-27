@@ -1,5 +1,10 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import styled from 'styled-components';
+import { useAuth } from '../contexts/AuthContext';
+import { useFirebase } from '../hooks/useFirebase';
+import { FixedSizeGrid } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { Loading, ErrorMessage } from '../components/common';
 
 const CollectionsWrapper = styled.div`
   padding: 2rem;
@@ -18,26 +23,59 @@ const CollectionCard = styled.div`
 `;
 
 const Collections = () => {
-  // Mock data for demonstration
-  const collections = [
-    { id: 1, name: 'Favorite Books', itemCount: 15 },
-    { id: 2, name: 'Must-Watch Movies', itemCount: 8 },
-    { id: 3, name: 'Computer Science Textbooks', itemCount: 5 },
-    { id: 4, name: 'Classic Literature', itemCount: 12 },
-  ];
+  const { user } = useAuth();
+  const { queryDocuments, loading, error } = useFirebase();
+  const [collections, setCollections] = useState([]);
+
+  const fetchCollections = useCallback(async () => {
+    if (!user) return;
+    
+    const userCollections = await queryDocuments('collections', [
+      { field: 'userId', operator: '==', value: user.uid }
+    ]);
+    setCollections(userCollections);
+  }, [user, queryDocuments]);
+
+  const CollectionCell = React.memo(({ columnIndex, rowIndex, style, data }) => {
+    const index = rowIndex * 3 + columnIndex;
+    const collection = data[index];
+    
+    if (!collection) return null;
+
+    return (
+      <div style={style}>
+        <CollectionCard>
+          <h3>{collection.name}</h3>
+          <p>{collection.description}</p>
+        </CollectionCard>
+      </div>
+    );
+  });
 
   return (
     <CollectionsWrapper>
       <h2>My Collections</h2>
-      <CollectionGrid>
-        {collections.map(collection => (
-          <CollectionCard key={collection.id}>
-            <h3>{collection.name}</h3>
-            <p>{collection.itemCount} items</p>
-            <button>View Collection</button>
-          </CollectionCard>
-        ))}
-      </CollectionGrid>
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <ErrorMessage>{error}</ErrorMessage>
+      ) : (
+        <AutoSizer>
+          {({ height, width }) => (
+            <FixedSizeGrid
+              columnCount={3}
+              columnWidth={width / 3}
+              height={height}
+              rowCount={Math.ceil(collections.length / 3)}
+              rowHeight={200}
+              width={width}
+              itemData={collections}
+            >
+              {CollectionCell}
+            </FixedSizeGrid>
+          )}
+        </AutoSizer>
+      )}
     </CollectionsWrapper>
   );
 };

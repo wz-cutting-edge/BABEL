@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import styled from 'styled-components';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, database } from '../firebase';
-import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useFirebase } from '../hooks/useFirebase';
+import { storage, db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
-import { ref, set, serverTimestamp } from 'firebase/database';
+import { Button, ErrorMessage } from '../components/common';
 
 const ProfileWrapper = styled.div`
   padding: 2rem;
@@ -47,61 +49,61 @@ const Textarea = styled.textarea`
 `;
 
 const Profile = () => {
-  const [user] = useAuthState(auth);
-  const [username, setUsername] = useState(user?.displayName || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const { user } = useAuth();
   const [bio, setBio] = useState('');
+  const [photoURL, setPhotoURL] = useState('');
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
     try {
-      await updateProfile(auth.currentUser, { displayName: username });
-      const userRef = ref(database, `users/${user.uid}`);
-      await set(userRef, {
-        username,
-        bio,
-        email: user.email,
-        updatedAt: serverTimestamp()
-      });
-      console.log('Profile updated successfully');
+      const storageRef = ref(storage, `profilePhotos/${user.uid}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      
+      await updateProfile(user, { photoURL: url });
+      await updateDoc(doc(db, 'users', user.uid), { photoURL: url });
+      setPhotoURL(url);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      setError('Failed to upload photo');
+      console.error(error);
     }
   };
 
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { bio });
+      setError(null);
+    } catch (error) {
+      setError('Failed to update profile');
+      console.error(error);
+    }
+  };
 
   return (
     <ProfileWrapper>
-      <ProfileImage src={user.photoURL || "/placeholder.svg?height=150&width=150"} alt="Profile" />
+      <ProfileImage src={photoURL || user?.photoURL || '/default-avatar.png'} alt="Profile" />
+      <input type="file" accept="image/*" onChange={handlePhotoUpload} />
+      
       <ProfileInfo>
-        <h2>{user.displayName}</h2>
-        <p>{user.email}</p>
+        <h2>{user?.displayName}</h2>
+        <p>{user?.email}</p>
       </ProfileInfo>
-      <h3>Edit Profile</h3>
-      <ProfileForm onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <Input
-          type="email"
-          placeholder="Email"
-          value={email}
-          disabled
-        />
+
+      <ProfileForm onSubmit={handleUpdateProfile}>
         <Textarea
-          placeholder="Bio"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
+          placeholder="Tell us about yourself..."
           rows={4}
         />
-        <button type="submit">Update Profile</button>
+        <Button type="submit">Update Profile</Button>
       </ProfileForm>
+      
+      {error && <ErrorMessage>{error}</ErrorMessage>}
     </ProfileWrapper>
   );
 };
