@@ -13,13 +13,16 @@ node_modules/
 /build
 /dist
 
-# Environment Variables
+# Environment Variables and Secrets
 .env
 .env.local
 .env.development
 .env.test
 .env.production
 .env*.local
+*.env
+.env.backup
+.env.save
 
 # Firebase
 firebase-config.js
@@ -27,6 +30,30 @@ firebase-config.json
 serviceAccountKey.json
 .firebase/
 firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+firebase.json
+database.rules.json
+firestore.rules
+storage.rules
+.runtimeconfig.json
+
+# Security and Keys
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.secret
+*secret*
+*password*
+*credential*
+auth_config.json
+google-services.json
+GoogleService-Info.plist
 
 # Logs
 npm-debug.log*
@@ -42,11 +69,15 @@ pids/
 *.seed
 *.pid.lock
 
-# IDE and Editor Configurations
+# IDE and Editor
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-*
+.project
+.classpath
+.settings/
 
 # OS generated files
 .DS_Store
@@ -57,18 +88,20 @@ pids/
 ehthumbs.db
 Thumbs.db
 
-# Backup files
+# Temporary files
+*.tmp
+*.temp
 *.bak
 *.backup
 *~
 
-# Optional eslint cache
+# Cache
 .eslintcache
+.cache/
+.npm/
+.yarn/
 
-# Optional REPL history
-.node_repl_history
-
-# Python and Django
+# Python and Django specific
 __pycache__/
 *.py[cod]
 *$py.class
@@ -80,26 +113,7 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media/
-develop-eggs/
-downloads/
-eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 
 # Django translations
 *.pot
-
-# Additional sensitive data protection
-*.key
-*.pem
-*.crt
-*.cer
-*.p12
-*.pfx
-*.jks
-*.keystore
-*.secret
+*.mo
