@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { auth } from '../firebase';
@@ -22,6 +22,13 @@ const Nav = styled.nav`
 `;
 
 const Header = ({ user, toggleTheme }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const handleThemeToggle = () => {
+    setIsDarkMode(!isDarkMode);
+    toggleTheme();
+  };
+
   return (
     <HeaderWrapper>
       <Logo>BABEL</Logo>
@@ -40,7 +47,9 @@ const Header = ({ user, toggleTheme }) => {
             <Link to="/register">Register</Link>
           </>
         )}
-        <button onClick={toggleTheme}>Toggle Theme</button>
+        <button onClick={handleThemeToggle}>
+          {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
       </Nav>
     </HeaderWrapper>
   );
