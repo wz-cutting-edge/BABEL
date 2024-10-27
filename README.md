@@ -79,7 +79,7 @@ To run BABEL locally:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/wz-cutting-edge/babel.git
+   git clone https://github.com/wz-cutting-edge/BABEL.git
    cd babel
    ```
 
