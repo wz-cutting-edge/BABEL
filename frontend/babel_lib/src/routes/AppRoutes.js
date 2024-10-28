@@ -27,19 +27,11 @@ const AdminRoute = ({ children }) => {
 const AppRoutes = () => {
   const { user, isAdmin } = useAuth();
 
-  // Determine home component based on user type
-  const getHomeComponent = () => {
-    if (!user) return <Navigate to="/login" />;
-    if (isAdmin) return <Navigate to="/admin-dashboard" />;
-    return <UserHome />;
-  };
-
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={getHomeComponent()} />
+      <Route path="/" element={user ? <UserHome /> : <Navigate to="/login" />} />
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-      <Route path="/signup" element={!user ? <Register /> : <Navigate to="/" />} />
+      <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
       
       {/* Admin Routes */}
       <Route path="/admin-dashboard" element={

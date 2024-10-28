@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
 const RegisterWrapper = styled.div`
   display: flex;
@@ -37,13 +38,12 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState(null);
-  const [debugInfo, setDebugInfo] = useState('');
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setDebugInfo('');
     
     if (password !== confirmPassword) {
       setError("Passwords don't match");
@@ -51,17 +51,11 @@ const Register = () => {
     }
     
     try {
-      const batch = writeBatch(db);
-      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: username });
       
-      if (!userCredential.user.uid) {
-        throw new Error('User ID is undefined');
-      }
-      
       const userDoc = doc(db, 'users', userCredential.user.uid);
-      const userData = {
+      await setDoc(userDoc, {
         username,
         email,
         createdAt: serverTimestamp(),
@@ -70,21 +64,20 @@ const Register = () => {
         collectionIds: [],
         following: [],
         followers: []
-      };
-      
-      batch.set(userDoc, userData);
-      await batch.commit();
-      
+      });
+
+      setUser(userCredential.user);
       navigate('/');
     } catch (error) {
       console.error('Registration error:', error);
-      setError(`Registration failed: ${error.message}`);
+      setError(error.message);
     }
   };
 
   return (
     <RegisterWrapper>
-      <h2>Register for BABEL</h2>
+      <h2>Create an Account</h2>
+      {error && <ErrorMessage>{error}</ErrorMessage>}
       <Form onSubmit={handleSubmit}>
         <Input
           type="text"
@@ -115,11 +108,9 @@ const Register = () => {
           required
         />
         <button type="submit">Register</button>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        {debugInfo && <p style={{ fontSize: '12px', color: 'gray' }}>{debugInfo}</p>}
       </Form>
       <p>
-        Already have an account? <Link to="/login">Login here</Link>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
     </RegisterWrapper>
   );
