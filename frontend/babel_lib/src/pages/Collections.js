@@ -4,7 +4,18 @@ import { useAuth } from '../contexts/AuthContext';
 import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
 import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { db } from '../firebase';
-import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { 
+  collection, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  getDocs, 
+  orderBy, 
+  serverTimestamp,
+  writeBatch,
+  increment 
+} from 'firebase/firestore';
 import { Loading, ErrorMessage, Button } from '../components/common';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -30,9 +41,16 @@ const CollectionCard = styled.div`
   padding: 1.5rem;
   border-radius: 8px;
   position: relative;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 
   &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &.selected {
+    border: 2px solid ${props => props.theme.primary};
     transform: translateY(-2px);
   }
 `;
@@ -66,10 +84,32 @@ const Input = styled.input`
   flex: 1;
 `;
 
+const CollectionItems = styled.div`
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+`;
+
+const ItemCard = styled.div`
+  background-color: ${props => props.theme.secondaryBackground};
+  padding: 1rem;
+  border-radius: 8px;
+  position: relative;
+`;
+
+const CollectionMetadata = styled.div`
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: ${props => props.theme.textSecondary};
+`;
+
 const Collections = () => {
   const { user } = useAuth();
   const [newCollectionName, setNewCollectionName] = useState('');
   const { updateDocument } = useOptimisticUpdate('collections');
+  const [selectedCollection, setSelectedCollection] = useState(null);
+  const [collectionItems, setCollectionItems] = useState([]);
 
   const { data: collections, loading, error } = useRealtimeUpdates(
     'collections',
@@ -85,8 +125,14 @@ const Collections = () => {
       await addDoc(collection(db, 'collections'), {
         name: newCollectionName,
         userId: user.uid,
-        createdAt: new Date(),
-        itemCount: 0
+        createdAt: serverTimestamp(),
+        itemCount: 0,
+        createdBy: {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || 'Anonymous'
+        },
+        lastUpdated: serverTimestamp()
       });
       setNewCollectionName('');
     } catch (err) {
@@ -99,6 +145,54 @@ const Collections = () => {
       await deleteDoc(doc(db, 'collections', collectionId));
     } catch (err) {
       console.error('Error deleting collection:', err);
+    }
+  };
+
+  const viewCollectionItems = async (collectionId) => {
+    try {
+      const itemsRef = collection(db, 'collections', collectionId, 'items');
+      const q = query(itemsRef, orderBy('addedAt', 'desc'));
+      const snapshot = await getDocs(q);
+      
+      setCollectionItems(
+        snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+      );
+      setSelectedCollection(collectionId);
+    } catch (error) {
+      console.error('Error fetching collection items:', error);
+    }
+  };
+
+  const handleCollectionClick = (collection) => {
+    if (selectedCollection?.id === collection.id) {
+      setSelectedCollection(null);
+    } else {
+      setSelectedCollection(collection);
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    if (!selectedCollection) return;
+    try {
+      const batch = writeBatch(db);
+      
+      // Delete the item
+      const itemRef = doc(db, 'collections', selectedCollection.id, 'items', itemId);
+      batch.delete(itemRef);
+      
+      // Update collection metadata
+      const collectionRef = doc(db, 'collections', selectedCollection.id);
+      batch.update(collectionRef, {
+        itemCount: increment(-1),
+        lastUpdated: serverTimestamp()
+      });
+
+      await batch.commit();
+    } catch (error) {
+      console.error('Error deleting item:', error);
     }
   };
 
@@ -126,17 +220,45 @@ const Collections = () => {
       ) : error ? (
         <ErrorMessage>{error}</ErrorMessage>
       ) : (
-        <CollectionGrid>
-          {collections.map((collection) => (
-            <CollectionCard key={collection.id}>
-              <DeleteButton onClick={() => handleDeleteCollection(collection.id)}>
-                <Trash2 size={20} />
-              </DeleteButton>
-              <h3>{collection.name}</h3>
-              <p>Items: {collection.itemCount || 0}</p>
-            </CollectionCard>
-          ))}
-        </CollectionGrid>
+        <>
+          <CollectionGrid>
+            {collections.map((collection) => (
+              <CollectionCard 
+                key={collection.id}
+                onClick={() => handleCollectionClick(collection)}
+                className={selectedCollection?.id === collection.id ? 'selected' : ''}
+              >
+                <DeleteButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteCollection(collection.id);
+                  }}
+                >
+                  <Trash2 size={20} />
+                </DeleteButton>
+                <h3>{collection.name}</h3>
+                <CollectionMetadata>
+                  <p>Items: {collection.itemCount || 0}</p>
+                  <p>Created by: {collection.createdBy?.displayName || 'Anonymous'}</p>
+                  <p>Last updated: {collection.lastUpdated?.toDate().toLocaleDateString()}</p>
+                </CollectionMetadata>
+              </CollectionCard>
+            ))}
+          </CollectionGrid>
+
+          {selectedCollection && (
+            <CollectionItems 
+              className={selectedCollection?.id ? 'show' : 'hide'}
+            >
+              {collectionItems.map((item) => (
+                <ItemCard key={item.id}>
+                  <h3>{item.name}</h3>
+                  <p>Added at: {item.addedAt}</p>
+                </ItemCard>
+              ))}
+            </CollectionItems>
+          )}
+        </>
       )}
     </CollectionsWrapper>
   );

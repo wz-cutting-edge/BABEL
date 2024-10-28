@@ -5,6 +5,8 @@ import { db } from '../firebase';
 import { Search as SearchIcon, Tag as TagIcon } from 'lucide-react';
 import { Button } from '../components/common';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
+import AddToCollection from '../components/AddToCollection';
 
 const SearchWrapper = styled.div`
   padding: 2rem;
@@ -39,6 +41,12 @@ const ResultCard = styled.div`
   background-color: ${props => props.theme.secondaryBackground};
   padding: 1rem;
   border-radius: 5px;
+  
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
 `;
 
 const LoadingSpinner = styled.div`
@@ -85,6 +93,7 @@ const Search = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedMedia, setSelectedMedia] = useState(null);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -161,6 +170,12 @@ const Search = () => {
     }
   };
 
+  const { data: collections } = useRealtimeUpdates(
+    'collections',
+    [{ field: 'userId', operator: '==', value: user?.uid }],
+    { enabled: !!user }
+  );
+
   return (
     <SearchWrapper>
       <h2>Search BABEL</h2>
@@ -192,31 +207,29 @@ const Search = () => {
         ) : (
           results.map(result => (
             <ResultCard key={result.id}>
-              {result.thumbnail && (
-                <img 
-                  src={result.thumbnail} 
-                  alt={result.title}
-                  style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '4px' }}
-                />
-              )}
               <h3>{result.title}</h3>
-              {result.author && <p>Author: {result.author}</p>}
-              <p>Type: {result.type}</p>
-              {result.description && <p>{result.description}</p>}
-              {result.tags && result.tags.length > 0 && (
-                <TagsWrapper>
-                  {result.tags.map((tag, index) => (
-                    <Tag key={index}>
-                      <TagIcon size={12} />
-                      {tag}
-                    </Tag>
-                  ))}
-                </TagsWrapper>
+              <p>{result.description}</p>
+              {result.tags?.map((tag) => (
+                <Tag key={tag}>{tag}</Tag>
+              ))}
+              {user && (
+                <div className="actions">
+                  <Button onClick={() => setSelectedMedia(result)}>
+                    Add to Collection
+                  </Button>
+                </div>
               )}
             </ResultCard>
           ))
         )}
       </ResultsGrid>
+      {selectedMedia && (
+        <AddToCollection
+          mediaItem={selectedMedia}
+          collections={collections || []}
+          onClose={() => setSelectedMedia(null)}
+        />
+      )}
     </SearchWrapper>
   );
 };
