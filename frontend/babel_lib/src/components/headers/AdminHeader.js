@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, Moon, Sun, LogOut, HeadphonesIcon, Users, BarChart2, Upload } from 'lucide-react';
-import { auth } from '../../firebase';
+import React, { useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
+import { BookOpen, Moon, Sun, LogOut, Users, Flag, BarChart2, Upload, User, Layout } from 'lucide-react';
+import { auth } from '../../services/firebase/config';
 import {
   HeaderWrapper,
   Container,
   NavGroup,
-  NavLink,
-  IconButton,
-  Dropdown,
-  DropdownContent,
-  DropdownItem
+  NavLink as StyledNavLink,
+  IconButton
 } from './styles';
 
-const AdminHeader = ({ toggleTheme, isDarkMode, user }) => {
+const AdminHeader = ({ toggleTheme, isDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 0);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -28,57 +24,47 @@ const AdminHeader = ({ toggleTheme, isDarkMode, user }) => {
   return (
     <HeaderWrapper isScrolled={isScrolled}>
       <Container>
-        <NavGroup className="logo-group">
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <BookOpen size={24} color="#7289DA" />
+        <NavGroup>
+          <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
+            <BookOpen size={24} />
             <span style={{ fontWeight: 'bold' }}>BABEL ADMIN</span>
           </Link>
         </NavGroup>
-        
-        <NavGroup className="nav-links">
-          <nav style={{ display: 'flex', gap: '1.5rem' }}>
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/customer-support">Customer Support</NavLink>
-            <NavLink to="/user-reports">User Reports</NavLink>
-            <NavLink to="/analytics">Analytics</NavLink>
-            <NavLink to="/media-uploader">Media Uploader</NavLink>
-          </nav>
+
+        <NavGroup>
+          <StyledNavLink to="/admin">
+            <Layout size={20} />
+            <span>Dashboard</span>
+          </StyledNavLink>
+          <StyledNavLink to="/admin/support">
+            <Users size={20} />
+            <span>Customer Support</span>
+          </StyledNavLink>
+          <StyledNavLink to="/admin/reports">
+            <Flag size={20} />
+            <span>User Reports</span>
+          </StyledNavLink>
+          <StyledNavLink to="/admin/analytics">
+            <BarChart2 size={20} />
+            <span>Analytics</span>
+          </StyledNavLink>
+          <StyledNavLink to="/admin/upload">
+            <Upload size={20} />
+            <span>Media Uploader</span>
+          </StyledNavLink>
+          <StyledNavLink to="/profile">
+            <User size={20} />
+            <span>Profile</span>
+          </StyledNavLink>
         </NavGroup>
-        
-        <NavGroup className="actions-group">
+
+        <NavGroup>
           <IconButton onClick={toggleTheme}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </IconButton>
-          <Dropdown>
-            <IconButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-              <img 
-                src={user?.photoURL || '/default-avatar.png'} 
-                alt="avatar" 
-                style={{ width: '32px', height: '32px', borderRadius: '50%' }}
-              />
-            </IconButton>
-            <DropdownContent isOpen={isDropdownOpen}>
-              <div style={{ padding: '0.5rem 1rem', borderBottom: `1px solid ${props => props.theme.border}` }}>
-                <div>Admin User</div>
-                <div style={{ fontSize: '0.75rem', color: props => props.theme.secondary }}>{user?.email}</div>
-              </div>
-              <DropdownItem as={Link} to="/customer-support">
-                <HeadphonesIcon size={16} /> Customer Support
-              </DropdownItem>
-              <DropdownItem as={Link} to="/user-reports">
-                <Users size={16} /> User Reports
-              </DropdownItem>
-              <DropdownItem as={Link} to="/analytics">
-                <BarChart2 size={16} /> Analytics
-              </DropdownItem>
-              <DropdownItem as={Link} to="/media-uploader">
-                <Upload size={16} /> Media Uploader
-              </DropdownItem>
-              <DropdownItem onClick={() => auth.signOut()}>
-                <LogOut size={16} /> Log out
-              </DropdownItem>
-            </DropdownContent>
-          </Dropdown>
+          <IconButton onClick={() => auth.signOut()}>
+            <LogOut size={20} />
+          </IconButton>
         </NavGroup>
       </Container>
     </HeaderWrapper>

@@ -1,19 +1,23 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { AdminHeader, SignedHeader, UnsignedHeader } from '../components/headers';
+import { useTheme } from '../contexts/ThemeContext';
+import AdminHeader from '../components/headers/AdminHeader';
+import SignedHeader from '../components/headers/SignedHeader';
+import UnsignedHeader from '../components/headers/UnsignedHeader';
 import Footer from '../components/Footer';
 
-const MainLayout = ({ children, toggleTheme, isDarkMode }) => {
+const MainLayout = ({ children }) => {
   const { user, isAdmin } = useAuth();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   const renderHeader = () => {
     if (isAdmin) {
-      return <AdminHeader toggleTheme={toggleTheme} isDarkMode={isDarkMode} user={user} />;
+      return <AdminHeader user={user} isDarkMode={isDarkMode} toggleTheme={toggleTheme} />;
     }
     if (user) {
-      return <SignedHeader toggleTheme={toggleTheme} isDarkMode={isDarkMode} user={user} />;
+      return <SignedHeader user={user} isDarkMode={isDarkMode} toggleTheme={toggleTheme} />;
     }
-    return <UnsignedHeader toggleTheme={toggleTheme} isDarkMode={isDarkMode} />;
+    return <UnsignedHeader isDarkMode={isDarkMode} toggleTheme={toggleTheme} />;
   };
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun } from 'lucide-react';
-import { auth } from '../../firebase';
+import { auth } from '../../services/firebase/config';
 import {
   HeaderWrapper,
   Container,

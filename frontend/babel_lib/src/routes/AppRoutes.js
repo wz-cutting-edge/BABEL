@@ -1,71 +1,49 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Loading } from '../components/common';
 import Home from '../pages/Home';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import UserHome from '../pages/UserHome';
-import AdminDashboard from '../pages/AdminDashboard';
+import Login from '../pages/auth/Login';
+import Register from '../pages/auth/Register';
+import UserHome from '../pages/user/UserHome';
+import Profile from '../pages/user/Profile';
+import Collections from '../pages/user/Collections';
+import CollectionViewer from '../pages/collections/CollectionViewer';
 import Search from '../pages/Search';
-import Collections from '../pages/Collections';
-import Profile from '../pages/Profile';
-import MediaUploader from '../pages/MediaUploader';
-import CustomerSupport from '../pages/CustomerSupport';
-import UserReports from '../pages/UserReports';
-import Analytics from '../pages/Analytics';
-
-const AdminRoute = ({ children }) => {
-  const { user, isAdmin, loading } = useAuth();
-  
-  if (loading) return <Loading />;
-  if (!user || !isAdmin) return <Navigate to="/" />;
-  
-  return children;
-};
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import CustomerSupport from '../pages/admin/CustomerSupport';
+import UserReports from '../pages/admin/UserReports';
+import NotFound from '../pages/NotFound';
+import Forums from '../pages/user/Forums';
+import MediaViewer from '../pages/media/MediaViewer';
+import PrivateRoute from '../components/common/PrivateRoute';
+import Analytics from '../pages/admin/Analytics';
+import MediaUploader from '../pages/admin/MediaUploader';
 
 const AppRoutes = () => {
-  const { user, isAdmin } = useAuth();
-
   return (
     <Routes>
-      <Route path="/" element={user ? <UserHome /> : <Navigate to="/login" />} />
-      <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-      <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      {/* Protected Routes */}
+      <Route path="/user/home" element={<PrivateRoute><UserHome /></PrivateRoute>} />
+      <Route path="/collections" element={<PrivateRoute><Collections /></PrivateRoute>} />
+      <Route path="/collections/:collectionId" element={<PrivateRoute><CollectionViewer /></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+      <Route path="/search" element={<PrivateRoute><Search /></PrivateRoute>} />
+      <Route path="/forums" element={<PrivateRoute><Forums /></PrivateRoute>} />
+      <Route path="/media/:mediaId" element={<PrivateRoute><MediaViewer /></PrivateRoute>} />
       
       {/* Admin Routes */}
-      <Route path="/admin-dashboard" element={
-        <AdminRoute>
-          <AdminDashboard />
-        </AdminRoute>
-      } />
-      <Route path="/customer-support" element={
-        <AdminRoute>
-          <CustomerSupport />
-        </AdminRoute>
-      } />
-      <Route path="/user-reports" element={
-        <AdminRoute>
-          <UserReports />
-        </AdminRoute>
-      } />
-      <Route path="/analytics" element={
-        <AdminRoute>
-          <Analytics />
-        </AdminRoute>
-      } />
-      <Route path="/media-uploader" element={
-        <AdminRoute>
-          <MediaUploader />
-        </AdminRoute>
-      } />
-
-      {/* Protected Routes */}
-      <Route path="/search" element={<Search />} />
-      <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
+      <Route path="/admin" element={<PrivateRoute requireAdmin><AdminDashboard /></PrivateRoute>} />
+      <Route path="/admin/support" element={<PrivateRoute requireAdmin><CustomerSupport /></PrivateRoute>} />
+      <Route path="/admin/reports" element={<PrivateRoute requireAdmin><UserReports /></PrivateRoute>} />
+      <Route path="/admin/analytics" element={<PrivateRoute requireAdmin><Analytics /></PrivateRoute>} />
+      <Route path="/admin/upload" element={<PrivateRoute requireAdmin><MediaUploader /></PrivateRoute>} />
       
-      {/* Catch-all route */}
-      <Route path="*" element={<Navigate to="/" />} />
+      {/* 404 Route */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

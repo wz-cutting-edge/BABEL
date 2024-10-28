@@ -1,12 +1,22 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from '../firebase';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth, db } from '../services/firebase/config';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut
+} from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -16,38 +26,45 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userData = userDoc.data();
-        setIsAdmin(userData?.role === 'admin');
         setUser(user);
+        setIsAdmin(userData?.role === 'admin');
+        
+        // Handle automatic redirects
+        const currentPath = window.location.pathname;
+        if (currentPath === '/login' || currentPath === '/') {
+          if (userData?.role === 'admin') {
+            navigate('/admin/dashboard');
+          } else {
+            navigate('/user/home');
+          }
+        }
       } else {
         setUser(null);
         setIsAdmin(false);
+        
+        // Redirect to home if on protected routes
+        const currentPath = window.location.pathname;
+        if (currentPath.startsWith('/user') || currentPath.startsWith('/admin')) {
+          navigate('/');
+        }
       }
       setLoading(false);
     });
 
     return unsubscribe;
-  }, []);
+  }, [navigate]);
 
-  const value = useMemo(() => ({
+  const value = {
     user,
     isAdmin,
-    loading,
-    setUser,
-    setIsAdmin,
-    setLoading
-  }), [user, isAdmin, loading]);
+    login: (email, password) => signInWithEmailAndPassword(auth, email, password),
+    register: (email, password) => createUserWithEmailAndPassword(auth, email, password),
+    logout: () => signOut(auth),
+  };
 
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+}

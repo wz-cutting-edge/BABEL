@@ -11,7 +11,28 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+export * from './services/firebase/config';
+
+// Add any additional Firebase utility functions here
+export const getErrorMessage = (error) => {
+  switch (error.code) {
+    case 'auth/user-not-found':
+      return 'No user found with this email address';
+    case 'auth/wrong-password':
+      return 'Invalid password';
+    case 'auth/email-already-in-use':
+      return 'Email address is already registered';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters';
+    case 'auth/invalid-email':
+      return 'Invalid email address';
+    default:
+      return error.message;
+  }
+};
+
+export const generateUniqueId = () => {
+  return Math.random().toString(36).substr(2, 9);
+};

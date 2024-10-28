@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Search, LogIn, UserPlus, Moon, Sun } from 'lucide-react';
+import { BookOpen, Search, LogIn, UserPlus, Sun, Moon } from 'lucide-react';
 import {
   HeaderWrapper,
   Container,
@@ -26,7 +26,7 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
         <NavGroup className="logo-group">
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <BookOpen size={24} color="#7289DA" />
-            <span style={{ fontWeight: 'bold' }}>BABEL</span>
+            <span style={{ fontWeight: 'bold', color: 'inherit' }}>BABEL</span>
           </Link>
         </NavGroup>
         
@@ -56,7 +56,8 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
                 backgroundColor: '#7289DA', 
                 color: 'white', 
                 padding: '0.5rem 1rem', 
-                borderRadius: '4px' 
+                borderRadius: '4px',
+                transition: 'opacity 0.2s ease'
               }}
             >
               <UserPlus size={16} />

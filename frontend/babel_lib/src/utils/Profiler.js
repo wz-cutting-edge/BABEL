@@ -1,6 +1,6 @@
 import React from 'react';
 import { updateDoc } from 'firebase/firestore';
-import { Button, ErrorMessage } from '../components/common';
+import { Button, ErrorMessage } from '../components/common/common';
 
 export const onRenderCallback = (
   id,
