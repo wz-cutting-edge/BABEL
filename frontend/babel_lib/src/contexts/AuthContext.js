@@ -2,43 +2,44 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, loading] = useAuthState(auth);
+  const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdminRole = async () => {
-      try {
-        if (!user) {
-          setIsAdmin(false);
-          return;
-        }
-        const userDoc = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userDoc);
-        setIsAdmin(userSnap.exists() && userSnap.data().role === 'admin');
-      } catch (err) {
-        setError(err.message);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userData = userDoc.data();
+        setIsAdmin(userData?.role === 'admin');
+        setUser(user);
+      } else {
+        setUser(null);
         setIsAdmin(false);
       }
-    };
-    
-    checkAdminRole();
-  }, [user]);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
 
   const value = useMemo(() => ({
     user,
-    loading,
     isAdmin,
-    error
-  }), [user, loading, isAdmin, error]);
+    loading,
+    setUser,
+    setIsAdmin,
+    setLoading
+  }), [user, isAdmin, loading]);
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

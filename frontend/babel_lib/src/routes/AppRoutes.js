@@ -15,68 +15,65 @@ import CustomerSupport from '../pages/CustomerSupport';
 import UserReports from '../pages/UserReports';
 import Analytics from '../pages/Analytics';
 
-const ProtectedRoute = ({ children, isAllowed, redirectPath = '/' }) => {
-  if (!isAllowed) {
-    return <Navigate to={redirectPath} replace />;
-  }
+const AdminRoute = ({ children }) => {
+  const { user, isAdmin, loading } = useAuth();
+  
+  if (loading) return <Loading />;
+  if (!user || !isAdmin) return <Navigate to="/" />;
+  
   return children;
 };
 
 const AppRoutes = () => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin } = useAuth();
 
-  if (loading) return <Loading />;
+  // Determine home component based on user type
+  const getHomeComponent = () => {
+    if (!user) return <Navigate to="/login" />;
+    if (isAdmin) return <Navigate to="/admin-dashboard" />;
+    return <UserHome />;
+  };
 
   return (
     <Routes>
-      <Route 
-        path="/" 
-        element={
-          user ? (
-            isAdmin ? <Navigate to="/admin-dashboard" /> : <UserHome />
-          ) : (
-            <Home />
-          )
-        } 
-      />
-      <Route 
-        path="/admin-dashboard" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="/search" element={<Search />} />
+      {/* Public Routes */}
+      <Route path="/" element={getHomeComponent()} />
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-      <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+      <Route path="/signup" element={!user ? <Register /> : <Navigate to="/" />} />
+      
+      {/* Admin Routes */}
+      <Route path="/admin-dashboard" element={
+        <AdminRoute>
+          <AdminDashboard />
+        </AdminRoute>
+      } />
+      <Route path="/customer-support" element={
+        <AdminRoute>
+          <CustomerSupport />
+        </AdminRoute>
+      } />
+      <Route path="/user-reports" element={
+        <AdminRoute>
+          <UserReports />
+        </AdminRoute>
+      } />
+      <Route path="/analytics" element={
+        <AdminRoute>
+          <Analytics />
+        </AdminRoute>
+      } />
+      <Route path="/media-uploader" element={
+        <AdminRoute>
+          <MediaUploader />
+        </AdminRoute>
+      } />
+
+      {/* Protected Routes */}
+      <Route path="/search" element={<Search />} />
       <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-      <Route path="/collections" element={user ? <Collections /> : <Navigate to="/login" />} />
-      <Route path="/media-uploader" element={isAdmin ? <MediaUploader /> : <Navigate to="/" />} />
-      <Route 
-        path="/customer-support" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <CustomerSupport />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/user-reports" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <UserReports />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/analytics" 
-        element={
-          <ProtectedRoute isAllowed={isAdmin}>
-            <Analytics />
-          </ProtectedRoute>
-        } 
-      />
+      
+      {/* Catch-all route */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };

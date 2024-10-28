@@ -37,7 +37,7 @@ const AdminDashboard = () => {
         <Link to="/user-reports" style={{ marginRight: '1rem' }}>User Reports</Link>
         <Link to="/analytics" style={{ marginRight: '1rem' }}>Analytics</Link>
         <Link to="/media-uploader" style={{ marginRight: '1rem' }}>Media Uploader</Link>
-        <Link to="/" onClick={() => auth.signOut()}>Logout</Link>
+        <Link to="/admin-dashboard" onClick={() => auth.signOut()}>Logout</Link>
       </nav>
       <DashboardGrid>
         <DashboardCard>

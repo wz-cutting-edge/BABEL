@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { storage, db } from '../firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -87,13 +87,12 @@ const Progress = styled.div`
 
 const MediaUploader = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isAdmin } = useAuth();
   const [file, setFile] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'book', // Default type
+    type: 'book',
     tags: '',
     isPublic: true,
   });
@@ -107,38 +106,10 @@ const MediaUploader = () => {
   };
 
   useEffect(() => {
-    console.log('Storage bucket:', storage?.app?.options?.storageBucket);
-    console.log('Full storage config:', storage?.app?.options);
-  }, []);
-
-  useEffect(() => {
-    if (!storage || !db) {
-      setError('Firebase not properly initialized');
-      return;
+    if (!isAdmin) {
+      navigate('/');
     }
-    
-    console.log('Firebase initialized:', {
-      storage: !!storage,
-      db: !!db,
-      user: !!user
-    });
-  }, []);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        setIsAdmin(userDoc.data()?.role === 'admin');
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        setError('You do not have permission to upload media');
-      }
-    };
-    
-    if (user) {
-      checkAdminStatus();
-    }
-  }, [user]);
+  }, [isAdmin, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -234,11 +205,6 @@ const MediaUploader = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!isAdmin) {
-      setError('You do not have permission to upload media');
-      return;
-    }
-
     // Validate form data
     if (!formData.title.trim()) {
       setError('Title is required');

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginWrapper = styled.div`
   display: flex;
@@ -30,29 +31,45 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { setUser, setIsAdmin, setLoading } = useAuth();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userData = userDoc.data();
+        setIsAdmin(userData?.role === 'admin');
+        setUser(user);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const userDoc = doc(db, 'users', userCredential.user.uid);
-      const userSnap = await getDoc(userDoc);
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
       
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        // Add a small delay to ensure admin status is set in App component
-        await new Promise(resolve => setTimeout(resolve, 100));
-        if (userData.role === 'admin') {
-          navigate('/admin-dashboard');
-        } else {
-          navigate('/');
-        }
+      if (!userDoc.exists()) {
+        throw new Error('User document not found');
+      }
+
+      const userData = userDoc.data();
+      
+      if (userData.role === 'admin') {
+        navigate('/admin-dashboard');
       } else {
         navigate('/');
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message);
     }
   };
 
