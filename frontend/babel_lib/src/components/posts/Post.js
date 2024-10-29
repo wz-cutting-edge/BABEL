@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase/config';
-import { doc, updateDoc, increment, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { Heart, MessageCircle, Book } from 'lucide-react';
 import Comments from './Comments';
 
@@ -70,11 +70,22 @@ const Post = React.forwardRef(({ post }, ref) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const hasLiked = post.likedBy?.includes(user?.uid);
+
   const handleLike = async () => {
+    if (!user) return;
+    
     const postRef = doc(db, 'posts', post.id);
-    await updateDoc(postRef, {
-      likes: increment(1)
-    });
+    try {
+      await updateDoc(postRef, {
+        likes: increment(hasLiked ? -1 : 1),
+        likedBy: hasLiked 
+          ? arrayRemove(user.uid)
+          : arrayUnion(user.uid)
+      });
+    } catch (error) {
+      console.error('Error updating like:', error);
+    }
   };
 
   const handleMediaClick = () => {
@@ -95,16 +106,16 @@ const Post = React.forwardRef(({ post }, ref) => {
       <p>{post.content}</p>
       {post.imageUrl && <PostImage src={post.imageUrl} alt="Post content" />}
       <ActionBar>
-        <button onClick={handleLike}>
-          <Heart /> {post.likes || 0}
-        </button>
-        <button onClick={() => setShowComments(!showComments)}>
+        <ActionButton onClick={handleLike} active={hasLiked}>
+          <Heart fill={hasLiked ? "currentColor" : "none"} /> {post.likes || 0}
+        </ActionButton>
+        <ActionButton onClick={() => setShowComments(!showComments)}>
           <MessageCircle /> {post.comments || 0}
-        </button>
+        </ActionButton>
         {post.mediaId && (
-          <button onClick={handleMediaClick}>
+          <ActionButton onClick={handleMediaClick}>
             <Book /> View Content
-          </button>
+          </ActionButton>
         )}
       </ActionBar>
       {showComments && <Comments postId={post.id} />}

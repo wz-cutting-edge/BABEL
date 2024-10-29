@@ -61,8 +61,8 @@ const ActionBar = styled.div`
 
 const CreatePost = () => {
   const [content, setContent] = useState('');
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { user } = useAuth();
@@ -70,50 +70,46 @@ const CreatePost = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
+      setSelectedImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
   const removeImage = () => {
-    setImage(null);
-    setImagePreview(null);
+    setSelectedImage(null);
+    setPreviewUrl(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim() && !image) return;
-
-    setLoading(true);
-    setError(null);
+    if (!content.trim() && !selectedImage) return;
 
     try {
-      let imageUrl = null;
-      if (image) {
-        const imageRef = ref(storage, `posts/${user.uid}/${Date.now()}-${image.name}`);
-        await uploadBytes(imageRef, image);
+      let imageUrl = '';
+      if (selectedImage) {
+        const imageRef = ref(storage, `posts/${Date.now()}_${selectedImage.name}`);
+        await uploadBytes(imageRef, selectedImage);
         imageUrl = await getDownloadURL(imageRef);
       }
 
       await addDoc(collection(db, 'posts'), {
-        userId: user.uid,
-        userName: user.displayName,
-        userAvatar: user.photoURL,
         content,
         imageUrl,
+        userId: user.uid,
+        userName: user.displayName || 'Anonymous',
+        userAvatar: user.photoURL || '',
+        createdAt: serverTimestamp(),
         likes: 0,
         comments: 0,
-        createdAt: serverTimestamp()
+        likedBy: []
       });
 
       setContent('');
-      setImage(null);
-      setImagePreview(null);
-    } catch (err) {
-      setError('Failed to create post. Please try again.');
-      console.error(err);
-    } finally {
-      setLoading(false);
+      setSelectedImage(null);
+      setPreviewUrl('');
+    } catch (error) {
+      console.error('Error creating post:', error);
+      setError('Failed to create post');
     }
   };
 
@@ -125,9 +121,9 @@ const CreatePost = () => {
           onChange={(e) => setContent(e.target.value)}
           placeholder="What's on your mind?"
         />
-        {imagePreview && (
+        {previewUrl && (
           <ImagePreview>
-            <img src={imagePreview} alt="Preview" />
+            <img src={previewUrl} alt="Preview" />
             <button type="button" onClick={removeImage}>
               <X size={16} />
             </button>
@@ -143,7 +139,7 @@ const CreatePost = () => {
             />
             <Image style={{ cursor: 'pointer' }} />
           </label>
-          <button type="submit" disabled={loading || (!content.trim() && !image)}>
+          <button type="submit" disabled={loading || (!content.trim() && !selectedImage)}>
             {loading ? 'Posting...' : 'Post'}
           </button>
         </ActionBar>
