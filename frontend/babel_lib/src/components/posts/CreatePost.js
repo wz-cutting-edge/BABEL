@@ -100,8 +100,7 @@ const CreatePost = () => {
         userAvatar: user.photoURL || '',
         createdAt: serverTimestamp(),
         likes: 0,
-        comments: 0,
-        likedBy: []
+        comments: 0
       });
 
       setContent('');

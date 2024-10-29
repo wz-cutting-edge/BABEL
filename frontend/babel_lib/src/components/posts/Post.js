@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase/config';
-import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion } from 'firebase/firestore';
-import { Heart, MessageCircle, Book } from 'lucide-react';
+import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion, getDoc, runTransaction } from 'firebase/firestore';
+import { MessageCircle, Book, Heart } from 'lucide-react';
 import Comments from './Comments';
 
 const PostWrapper = styled.div`
@@ -72,7 +72,8 @@ const Post = React.forwardRef(({ post }, ref) => {
 
   const hasLiked = post.likedBy?.includes(user?.uid);
 
-  const handleLike = async () => {
+  const handleLike = async (e) => {
+    e.stopPropagation();
     if (!user) return;
     
     const postRef = doc(db, 'posts', post.id);
