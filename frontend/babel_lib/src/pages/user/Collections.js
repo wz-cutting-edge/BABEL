@@ -254,6 +254,14 @@ const Collections = () => {
                 onClick={() => handleCollectionClick(collection)}
                 className={selectedCollection?.id === collection.id ? 'selected' : ''}
               >
+                <DeleteButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteCollection(collection.id);
+                  }}
+                >
+                  <Trash2 size={20} />
+                </DeleteButton>
                 <h3>{collection.name}</h3>
                 <p>{collection.items?.length || 0} items</p>
               </CollectionCard>
