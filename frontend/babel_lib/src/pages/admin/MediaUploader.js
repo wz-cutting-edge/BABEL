@@ -94,6 +94,33 @@ const Preview = styled.div`
   }
 `;
 
+const ImagePreview = styled.div`
+  width: 200px;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  position: relative;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: white;
+  }
+`;
+
 const MediaUploader = () => {
   const { user, isAdmin } = useAuth();
   
@@ -123,6 +150,8 @@ const MediaUploader = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [coverImage, setCoverImage] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -165,10 +194,16 @@ const MediaUploader = () => {
     setError(null);
 
     try {
-      await uploadMedia(file, {
-        ...metadata,
-        tags: metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-      }, user, isAdmin);
+      await uploadMedia(
+        file,
+        coverImage,
+        {
+          ...metadata,
+          tags: metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+        },
+        user,
+        isAdmin
+      );
 
       // Reset form
       setFile(null);
@@ -197,6 +232,32 @@ const MediaUploader = () => {
     <UploaderWrapper>
       <h2>Upload Media</h2>
       
+      <div>
+        <h3>Cover Image</h3>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              setCoverImage(file);
+              setCoverPreview(URL.createObjectURL(file));
+            }
+          }}
+        />
+        {coverPreview && (
+          <ImagePreview>
+            <img src={coverPreview} alt="Cover preview" />
+            <button onClick={() => {
+              setCoverImage(null);
+              setCoverPreview(null);
+            }}>
+              <X size={16} />
+            </button>
+          </ImagePreview>
+        )}
+      </div>
+
       <DropZone {...getRootProps()}>
         <input {...getInputProps()} />
         {isDragActive ? (

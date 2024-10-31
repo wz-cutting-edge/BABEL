@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDebounce } from '../hooks/useDebounce';
 import { searchMedia } from '../services/api/media';
-import { Search as SearchIcon, Filter } from 'lucide-react';
+import { Search as SearchIcon, Filter, Book, Video } from 'lucide-react';
 import { Loading, ErrorMessage } from '../components/common';
 import { useNavigate } from 'react-router-dom';
 import AddToCollection from '../components/features/collections/AddToCollection';
@@ -134,16 +134,48 @@ const MediaActions = styled.div`
 
 const ActionButton = styled.button`
   padding: 0.5rem 1rem;
-  border: 1px solid ${props => props.theme.border};
+  border: none;
   border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background: ${props => props.primary ? props.theme.primary : props.theme.secondaryBackground};
   color: ${props => props.primary ? 'white' : props.theme.text};
-  cursor: pointer;
-  transition: opacity 0.2s;
-
+  
   &:hover {
-    opacity: 0.9;
+    background: ${props => props.primary ? props.theme.primaryHover : props.theme.border};
   }
+`;
+
+const MediaThumbnail = styled.div`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  position: relative;
+
+  &:before {
+    content: '';
+    display: ${props => props.image ? 'none' : 'block'};
+    background-color: ${props => props.theme.background};
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: white;
+    font-size: 0.8rem;
+  }
+`;
+
+const MediaMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
 `;
 
 const Search = () => {
@@ -211,10 +243,18 @@ const Search = () => {
   }, [user]);
 
   const handleViewMedia = (item) => {
+    if (!user) {
+      navigate('/login', { state: { from: `/media/${item.id}` } });
+      return;
+    }
     navigate(`/media/${item.id}`);
   };
 
   const handleAddToCollection = (item) => {
+    if (!user) {
+      navigate('/login', { state: { from: '/search' } });
+      return;
+    }
     setSelectedMedia(item);
     setShowAddToCollection(true);
   };
@@ -248,21 +288,23 @@ const Search = () => {
       <ResultsGrid>
         {results.map((item) => (
           <MediaCard key={item.id}>
-            {item.url && (
-              <MediaImage 
-                src={item.url} 
-                alt={item.title}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.style.display = 'none';
-                }}
-              />
-            )}
+            <MediaThumbnail style={{ backgroundImage: `url(${item.coverUrl})` }}>
+              {!item.coverUrl && (
+                item.type === 'book' ? <Book size={32} /> : <Video size={32} />
+              )}
+            </MediaThumbnail>
             <MediaInfo>
-              <MediaTitle>{item.title || 'Untitled'}</MediaTitle>
-              {item.author && <MediaAuthor>{item.author}</MediaAuthor>}
-              <MediaType>{item.type}</MediaType>
-              {item.year && <MediaYear>{item.year}</MediaYear>}
+              <MediaTitle>{item.title}</MediaTitle>
+              <MediaMeta>
+                {item.type === 'book' ? <Book size={16} /> : <Video size={16} />}
+                <span>{item.author}</span>
+                {item.year && (
+                  <>
+                    <span>•</span>
+                    <span>{item.year}</span>
+                  </>
+                )}
+              </MediaMeta>
               <MediaActions>
                 <ActionButton primary onClick={() => handleViewMedia(item)}>
                   View

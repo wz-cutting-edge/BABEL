@@ -4,18 +4,31 @@ import {
   addDoc, 
   serverTimestamp, 
   query, 
-  where, 
+  where,
+  doc, 
+  getDoc,
   getDocs, 
   orderBy 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-export const uploadMedia = async (file, metadata, user, isAdmin) => {
+export const uploadMedia = async (file, coverImage, metadata, user, isAdmin) => {
   if (!user || !isAdmin) {
     throw new Error('Unauthorized: Only admins can upload media.');
   }
 
   try {
+    // Upload cover image if provided
+    let coverUrl = null;
+    if (coverImage) {
+      const timestamp = Date.now();
+      const extension = coverImage.name.split('.').pop();
+      const coverFileName = `${timestamp}_${metadata.title}_cover.${extension}`;
+      const coverRef = ref(storage, `covers/${coverFileName}`);
+      await uploadBytes(coverRef, coverImage);
+      coverUrl = await getDownloadURL(coverRef);
+    }
+
     // Determine file type and storage path
     let fileType;
     if (file.type === 'application/pdf') {
@@ -50,6 +63,7 @@ export const uploadMedia = async (file, metadata, user, isAdmin) => {
     const mediaDoc = await addDoc(collection(db, 'media'), {
       ...metadata,
       fileUrl: downloadUrl,
+      coverUrl, // Add the cover image URL
       storagePath,
       uploadedBy: user.uid,
       createdAt: serverTimestamp(),

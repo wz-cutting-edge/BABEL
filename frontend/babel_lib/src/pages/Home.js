@@ -12,6 +12,7 @@ import {
   Input 
 } from '../styles/shared';
 import { useAuth } from '../contexts/AuthContext';
+import BookCarousel from '../components/features/books/BookCarousel';
 
 const MainSection = styled.section`
   flex: 1;
@@ -87,6 +88,7 @@ const Home = () => {
               BABEL is a digital library archive and social platform for books, textbooks,
               movies, videos, and more. Join our community to discover, share, and discuss your favorite content.
             </Description>
+            {!user && <BookCarousel />}
             <SearchForm>
               <SearchInput placeholder="Search for content..." />
               <StyledButton>
