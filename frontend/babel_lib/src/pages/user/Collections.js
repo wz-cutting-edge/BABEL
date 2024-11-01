@@ -13,7 +13,9 @@ import {
   serverTimestamp,
   writeBatch,
   increment,
-  onSnapshot
+  onSnapshot,
+  arrayRemove,
+  updateDoc
 } from 'firebase/firestore';
 import { Loading, ErrorMessage, Button } from '../../components/common/common';
 import { Plus, Trash2 } from 'lucide-react';
@@ -203,8 +205,11 @@ const Collections = () => {
   const handleDeleteCollection = async (collectionId) => {
     try {
       await deleteDoc(doc(db, 'collections', collectionId));
-    } catch (err) {
-      console.error('Error deleting collection:', err);
+      if (selectedCollection?.id === collectionId) {
+        setSelectedCollection(null);
+      }
+    } catch (error) {
+      console.error('Error deleting collection:', error);
       setError('Failed to delete collection');
     }
   };
@@ -276,6 +281,13 @@ const Collections = () => {
                   <CollectionMediaItem 
                     key={mediaId} 
                     mediaId={mediaId}
+                    collectionId={selectedCollection.id}
+                    onDelete={(deletedMediaId) => {
+                      setSelectedCollection(prev => ({
+                        ...prev,
+                        items: prev.items.filter(id => id !== deletedMediaId)
+                      }));
+                    }}
                   />
                 ))}
               </MediaGrid>

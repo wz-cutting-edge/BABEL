@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayRemove } from 'firebase/firestore';
 import { db } from '../../../services/firebase/config';
-import { Book, Video } from 'lucide-react';
+import { Book, Video, Trash2 } from 'lucide-react';
 import { Button } from '../../common/common';
 
 const MediaItemWrapper = styled.div`
+  position: relative;
   background: ${props => props.theme.background};
   border-radius: 8px;
   padding: 1rem;
@@ -33,7 +34,29 @@ const ViewButton = styled(Button)`
   width: 100%;
 `;
 
-const CollectionMediaItem = ({ mediaId }) => {
+const DeleteButton = styled.button`
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: ${props => props.theme.error};
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  padding: 0.5rem;
+  border-radius: 50%;
+
+  &:hover {
+    background: rgba(255, 0, 0, 0.1);
+  }
+
+  ${MediaItemWrapper}:hover & {
+    opacity: 1;
+  }
+`;
+
+const CollectionMediaItem = ({ mediaId, collectionId, onDelete }) => {
   const navigate = useNavigate();
   const [media, setMedia] = useState(null);
 
@@ -52,10 +75,26 @@ const CollectionMediaItem = ({ mediaId }) => {
     fetchMedia();
   }, [mediaId]);
 
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    try {
+      const collectionRef = doc(db, 'collections', collectionId);
+      await updateDoc(collectionRef, {
+        items: arrayRemove(mediaId)
+      });
+      if (onDelete) onDelete(mediaId);
+    } catch (error) {
+      console.error('Error removing media from collection:', error);
+    }
+  };
+
   if (!media) return null;
 
   return (
     <MediaItemWrapper>
+      <DeleteButton onClick={handleDelete}>
+        <Trash2 size={16} />
+      </DeleteButton>
       <MediaTitle>{media.title}</MediaTitle>
       <MediaMeta>
         {media.type === 'book' ? <Book size={16} /> : <Video size={16} />}
