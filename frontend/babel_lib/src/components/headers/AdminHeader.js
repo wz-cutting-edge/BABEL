@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { BookOpen, Moon, Sun, LogOut, Users, Flag, BarChart2, Upload, User, Layout } from 'lucide-react';
 import { auth } from '../../services/firebase/config';
@@ -9,20 +9,23 @@ import {
   NavLink as StyledNavLink,
   IconButton
 } from './styles';
+import useScrollDirection from '../../hooks/useScrollDirection';
 
 const AdminHeader = ({ toggleTheme, isDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const scrollDirection = useScrollDirection();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <HeaderWrapper isScrolled={isScrolled}>
+    <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
       <Container>
         <NavGroup>
           <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>

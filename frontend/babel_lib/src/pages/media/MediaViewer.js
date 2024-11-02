@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { db, storage } from '../../services/firebase/config';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
-import { Loading, ErrorMessage } from '../../components/common';
+import { Loading, ErrorMessage, Button } from '../../components/common';
 import { Document, Page } from 'react-pdf';
 import { pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
@@ -17,25 +17,25 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 const ViewerWrapper = styled.div`
   padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: calc(100vh - 100px);
 `;
 
 const ContentWrapper = styled.div`
-  background: ${props => props.theme.secondaryBackground};
-  padding: 2rem;
-  border-radius: 8px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
 `;
 
 const PDFWrapper = styled.div`
   width: 100%;
-  max-width: ${props => props.doublePage ? '1600px' : '1200px'};
+  max-width: ${props => props.doublePage ? '1120px' : '840px'};
   margin: 0 auto;
   overflow-y: auto;
-  height: calc(100vh - 300px);
+  min-height: 100vh;
+  padding-bottom: 100px;
   
   .react-pdf__Document {
     display: flex;
@@ -48,33 +48,48 @@ const PDFWrapper = styled.div`
   .react-pdf__Page {
     margin-bottom: 1rem;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    min-height: ${props => props.doublePage ? '589px' : '786px'};
+    background: white;
   }
 `;
 
 const Controls = styled.div`
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
+  justify-content: center;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-`;
-
-const ViewControls = styled.div`
-  display: flex;
   gap: 1rem;
-  margin-bottom: 1rem;
-  justify-content: center;
-  width: 100%;
+  background: ${props => props.theme.secondaryBackground};
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  width: auto;
+  min-width: 300px;
 `;
 
-const Button = styled.button`
+const VideoPlayer = styled.video`
+  max-width: 100%;
+  max-height: 80vh;
+`;
+
+const PageInfo = styled.span`
+  min-width: 100px;
+  text-align: center;
+  color: ${props => props.theme.text};
+`;
+
+const StyledButton = styled.button`
   padding: 0.5rem 1rem;
   background: ${props => props.theme.primary};
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  width: 100px;
 
   &:disabled {
     opacity: 0.5;
@@ -82,9 +97,10 @@ const Button = styled.button`
   }
 `;
 
-const VideoPlayer = styled.video`
-  max-width: 100%;
-  max-height: 80vh;
+const Divider = styled.div`
+  width: 1px;
+  height: 24px;
+  background: ${props => props.theme.border};
 `;
 
 const MediaViewer = () => {
@@ -185,14 +201,30 @@ const MediaViewer = () => {
       <ContentWrapper>
         {media?.type === 'book' ? (
           <>
-            <ViewControls>
+            <Controls pdfWidth={doublePage ? 700 * zoom : 560 * zoom}>
               <Button onClick={() => setDoublePage(!doublePage)}>
                 {doublePage ? 'Single Page' : 'Double Page'}
               </Button>
               <Button onClick={loadBookmark}>Go to Bookmark</Button>
               <Button onClick={() => setZoom(zoom + 0.1)}>Zoom In</Button>
               <Button onClick={() => setZoom(zoom - 0.1)} disabled={zoom <= 0.5}>Zoom Out</Button>
-            </ViewControls>
+              <Divider />
+              <Button 
+                onClick={() => handlePageChange(Math.max(1, pageNumber - (doublePage ? 2 : 1)))}
+                disabled={pageNumber <= 1}
+              >
+                Previous
+              </Button>
+              <PageInfo>
+                Page {pageNumber}{doublePage && pageNumber < numPages && `-${pageNumber + 1}`} of {numPages}
+              </PageInfo>
+              <Button 
+                onClick={() => handlePageChange(Math.min(numPages, pageNumber + (doublePage ? 2 : 1)))}
+                disabled={pageNumber >= numPages}
+              >
+                Next
+              </Button>
+            </Controls>
             <PDFWrapper doublePage={doublePage}>
               <Document
                 file={mediaUrl}
@@ -209,14 +241,14 @@ const MediaViewer = () => {
                           renderTextLayer={true}
                           renderAnnotationLayer={true}
                           scale={zoom}
-                          width={500}
+                          width={350}
                         />
                         <Page 
                           pageNumber={pageNumber}
                           renderTextLayer={true}
                           renderAnnotationLayer={true}
                           scale={zoom}
-                          width={500}
+                          width={350}
                         />
                       </>
                     ) : (
@@ -226,7 +258,7 @@ const MediaViewer = () => {
                           renderTextLayer={true}
                           renderAnnotationLayer={true}
                           scale={zoom}
-                          width={500}
+                          width={560}
                         />
                         {pageNumber < numPages && (
                           <Page 
@@ -234,7 +266,7 @@ const MediaViewer = () => {
                             renderTextLayer={true}
                             renderAnnotationLayer={true}
                             scale={zoom}
-                            width={500}
+                            width={560}
                           />
                         )}
                       </>
@@ -246,28 +278,11 @@ const MediaViewer = () => {
                     renderTextLayer={true}
                     renderAnnotationLayer={true}
                     scale={zoom}
-                    width={800}
+                    width={560}
                   />
                 )}
               </Document>
             </PDFWrapper>
-            <Controls>
-              <Button 
-                onClick={() => handlePageChange(Math.max(1, pageNumber - (doublePage ? 2 : 1)))}
-                disabled={pageNumber <= 1}
-              >
-                Previous
-              </Button>
-              <span>
-                Page {pageNumber}{doublePage && pageNumber < numPages && `-${pageNumber + 1}`} of {numPages}
-              </span>
-              <Button 
-                onClick={() => handlePageChange(Math.min(numPages, pageNumber + (doublePage ? 2 : 1)))}
-                disabled={pageNumber >= numPages}
-              >
-                Next
-              </Button>
-            </Controls>
           </>
         ) : (
           <VideoPlayer controls>

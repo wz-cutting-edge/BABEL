@@ -13,6 +13,7 @@ const PDFContainer = styled.div`
   overflow-x: auto;
   position: relative;
   margin-bottom: 80px;
+  min-height: calc(100vh - 100px);
 `;
 
 const PDFContent = styled.div`
@@ -21,6 +22,20 @@ const PDFContent = styled.div`
   flex-direction: column;
   align-items: center;
   position: relative;
+  padding: 2rem 0;
+
+  .react-pdf__Page {
+    margin: 0 auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background: white;
+    max-width: 90vw;
+    height: auto;
+  }
+
+  .react-pdf__Document {
+    margin: 0 auto;
+    max-width: 100%;
+  }
 `;
 
 const Controls = styled.div`
@@ -152,7 +167,7 @@ const PDFViewer = ({ url }) => {
             pageNumber={pageNumber}
             renderTextLayer={true}
             renderAnnotationLayer={true}
-            width={Math.min(window.innerWidth - 40, 800)}
+            width={794}
             onRenderSuccess={() => {
               window.scrollTo({
                 top: scrollPositionRef.current,

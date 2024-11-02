@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 export const HeaderWrapper = styled.header`
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 50;
   width: 100%;
@@ -11,6 +11,8 @@ export const HeaderWrapper = styled.header`
     `${props.theme.background}95` : 
     props.theme.background};
   backdrop-filter: ${props => props.isScrolled ? 'blur(8px)' : 'none'};
+  transform: translateY(${props => props.hide ? '-100%' : '0'});
+  transition: transform 0.3s ease;
 `;
 
 export const Container = styled.div`

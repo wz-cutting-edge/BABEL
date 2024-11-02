@@ -1,73 +1,83 @@
-# Node and npm
+# Dependencies
 node_modules/
 .pnp/
 .pnp.js
-*.tgz
 .npm
+.yarn/
 .yarn-integrity
+package-lock.json
 
-# Testing
+# Testing and Coverage
 /coverage
+.nyc_output
+jest-results/
 
-# Production
-/build
-/dist
+# Build and Production
+/build/
+/dist/
+.next/
+.nuxt/
+.vuepress/dist
+.docz/
+storybook-static/
 
-# Environment Variables and Secrets
-.env
+# Environment and Secrets
+.env*
+.env.*
+!.env.example
+*.env
 .env.local
+.env.*.local
 .env.development
 .env.test
 .env.production
-.env*.local
-*.env
+.env.staging
 .env.backup
-.env.save
+config.js
+config.json
 
 # Firebase
-firebase-config.js
-firebase-config.json
-serviceAccountKey.json
+firebase*.js
+firebase*.json
 .firebase/
-firebase-debug.log
-firebase-debug.*.log
+firebase-debug*.log
 .firebaserc
-firebase.json
 database.rules.json
 firestore.rules
 storage.rules
 .runtimeconfig.json
+serviceAccount*.json
 
-# Security and Keys
-*.key
+# API Keys and Credentials
+*apikey*
+*secret*
+*password*
+*credential*
+*token*
+auth_config.json
+google-services.json
+GoogleService-Info.plist
+aws.json
+stripe.json
+
+# SSL/TLS and Security
 *.pem
+*.key
 *.crt
 *.cer
 *.p12
 *.pfx
 *.jks
 *.keystore
-*.secret
-*secret*
-*password*
-*credential*
-auth_config.json
-google-services.json
-GoogleService-Info.plist
 
-# Logs
+# Logs and Debug
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-logs/
-*.log
 debug.log
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
+.debug/
 
 # IDE and Editor
 .idea/
@@ -78,8 +88,10 @@ pids/
 .project
 .classpath
 .settings/
+*.code-workspace
+.history/
 
-# OS generated files
+# OS Generated
 .DS_Store
 .DS_Store?
 ._*
@@ -87,33 +99,15 @@ pids/
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# Temporary files
+# Temporary and Cache
 *.tmp
 *.temp
 *.bak
 *.backup
 *~
-
-# Cache
-.eslintcache
 .cache/
-.npm/
-.yarn/
-
-# Python and Django specific
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
-.eggs/
-.installed.cfg
-local_settings.py
-db.sqlite3
-media/
-
-# Django translations
-*.pot
-*.mo
+.eslintcache
+.stylelintcache
+.babel-cache/

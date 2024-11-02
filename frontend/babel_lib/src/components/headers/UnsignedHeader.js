@@ -8,9 +8,11 @@ import {
   NavLink,
   IconButton
 } from './styles';
+import useScrollDirection from '../../hooks/useScrollDirection';
 
 const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const scrollDirection = useScrollDirection();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,7 +23,7 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
   }, []);
 
   return (
-    <HeaderWrapper isScrolled={isScrolled}>
+    <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
       <Container>
         <NavGroup className="logo-group">
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

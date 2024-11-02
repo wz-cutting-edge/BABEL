@@ -12,10 +12,12 @@ import {
   DropdownContent,
   DropdownItem
 } from './styles';
+import useScrollDirection from '../../hooks/useScrollDirection';
 
 const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const scrollDirection = useScrollDirection();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,7 +28,7 @@ const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
   }, []);
 
   return (
-    <HeaderWrapper isScrolled={isScrolled}>
+    <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
       <Container>
         <NavGroup className="logo-group">
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
