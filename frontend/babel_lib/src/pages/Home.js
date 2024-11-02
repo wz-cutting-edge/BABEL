@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { BookOpen, Search, LogIn, UserPlus } from 'lucide-react';
+import { BookOpen, Search, LogIn, UserPlus, Book, Video } from 'lucide-react';
 import { Button } from '../components/common/common';
 import { 
   PageWrapper, 
@@ -13,6 +13,8 @@ import {
 } from '../styles/shared';
 import { useAuth } from '../contexts/AuthContext';
 import BookCarousel from '../components/features/books/BookCarousel';
+import { searchMedia } from '../services/api/search';
+import { useDebounce } from '../hooks/useDebounce';
 
 const MainSection = styled.section`
   flex: 1;
@@ -44,6 +46,7 @@ const SearchForm = styled.form`
   width: 100%;
   max-width: 32rem;
   margin: 1rem auto 2rem;
+  position: relative;
 `;
 
 const ButtonGroup = styled.div`
@@ -75,8 +78,93 @@ const SearchInput = styled(Input)`
   min-width: 0; // Prevents flex item from overflowing
 `;
 
+// Add new styled components for search results
+const SearchResults = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: ${props => props.theme.secondaryBackground};
+  border-radius: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  margin-top: 0.5rem;
+  display: ${props => props.show ? 'block' : 'none'};
+`;
+
+const ResultItem = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid ${props => props.theme.border};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  &:hover {
+    background: ${props => props.theme.background};
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ResultInfo = styled.div`
+  flex: 1;
+`;
+
+const ResultTitle = styled.h4`
+  margin: 0 0 0.25rem 0;
+  color: ${props => props.theme.text};
+`;
+
+const ResultMeta = styled.p`
+  margin: 0;
+  font-size: 0.875rem;
+  color: ${props => props.theme.textSecondary};
+`;
+
 const Home = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const searchHandler = useCallback(async (term) => {
+    if (!term) {
+      setResults([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const searchResults = await searchMedia(term);
+      setResults(searchResults);
+    } catch (err) {
+      console.error('Search error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const debouncedSearch = useDebounce(searchHandler, 500);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedSearch(value);
+  };
+
+  const handleViewItem = (item) => {
+    if (!user) {
+      navigate('/login', { state: { from: `/media/${item.id}` } });
+    } else {
+      navigate(`/media/${item.id}`);
+    }
+  };
 
   return (
     <PageWrapper>
@@ -89,12 +177,36 @@ const Home = () => {
               movies, videos, and more. Join our community to discover, share, and discuss your favorite content.
             </Description>
             {!user && <BookCarousel />}
-            <SearchForm>
-              <SearchInput placeholder="Search for content..." />
-              <StyledButton>
+            <SearchForm onSubmit={(e) => e.preventDefault()}>
+              <SearchInput 
+                placeholder="Search for content..." 
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+              <StyledButton type="submit">
                 <Search size={16} />
                 Search
               </StyledButton>
+              
+              <SearchResults show={searchTerm.length > 0}>
+                {loading ? (
+                  <ResultItem>Loading...</ResultItem>
+                ) : results.length > 0 ? (
+                  results.map((item) => (
+                    <ResultItem key={item.id} onClick={() => handleViewItem(item)}>
+                      {item.type === 'book' ? <Book size={24} /> : <Video size={24} />}
+                      <ResultInfo>
+                        <ResultTitle>{item.title}</ResultTitle>
+                        <ResultMeta>
+                          {item.author} • {item.type} {item.year && `• ${item.year}`}
+                        </ResultMeta>
+                      </ResultInfo>
+                    </ResultItem>
+                  ))
+                ) : searchTerm.length > 0 ? (
+                  <ResultItem>No results found</ResultItem>
+                ) : null}
+              </SearchResults>
             </SearchForm>
             <ButtonGroup>
               {!user && (
