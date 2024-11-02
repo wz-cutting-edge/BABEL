@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun } from 'lucide-react';
 import { auth } from '../../services/firebase/config';
 import {
@@ -18,6 +18,7 @@ const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const scrollDirection = useScrollDirection();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +27,13 @@ const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleProfileClick = () => {
+    if (user?.uid) {
+      navigate(`/profile/${user.uid}`);
+      setIsDropdownOpen(false);
+    }
+  };
 
   return (
     <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
@@ -66,7 +74,7 @@ const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
                 <div>{user?.displayName || 'User'}</div>
                 <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{user?.email}</div>
               </div>
-              <DropdownItem as={Link} to="/profile">
+              <DropdownItem onClick={handleProfileClick}>
                 <User size={16} /> Profile
               </DropdownItem>
               <DropdownItem as={Link} to="/collections">

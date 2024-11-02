@@ -10,11 +10,13 @@ import {
   IconButton
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AdminHeader = ({ toggleTheme, isDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const scrollDirection = useScrollDirection();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,7 +57,7 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
             <Upload size={20} />
             <span>Media Uploader</span>
           </StyledNavLink>
-          <StyledNavLink to="/profile">
+          <StyledNavLink to={`/profile/${user?.uid}`}>
             <User size={20} />
             <span>Profile</span>
           </StyledNavLink>

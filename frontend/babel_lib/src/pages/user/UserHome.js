@@ -68,7 +68,7 @@ const UserHome = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate('/');  // Add this line
+      navigate('/home');  // Changed from '/' to '/home'
     } catch (error) {
       console.error('Error signing out:', error);
     }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -8,11 +8,10 @@ import { MessageCircle, Book, Heart } from 'lucide-react';
 import Comments from './Comments';
 
 const PostWrapper = styled.div`
-  background: ${props => props.theme.secondaryBackground};
-  border-radius: 8px;
+  background-color: ${props => props.theme.secondaryBackground};
   padding: 1rem;
+  border-radius: 8px;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const PostHeader = styled.div`
@@ -22,7 +21,7 @@ const PostHeader = styled.div`
   margin-bottom: 1rem;
 `;
 
-const ProfilePic = styled.img`
+const PostAvatar = styled.img`
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -76,6 +75,7 @@ const Post = React.forwardRef(({ post }, ref) => {
   const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
 
   const hasLiked = post.likedBy?.includes(user?.uid);
 
@@ -102,15 +102,35 @@ const Post = React.forwardRef(({ post }, ref) => {
     }
   };
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', post.userId));
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (post.userId) {
+      fetchUserData();
+    }
+  }, [post.userId]);
+
   return (
     <PostWrapper ref={ref}>
       <PostHeader>
         <ProfileLink onClick={() => navigate(`/profile/${post.userId}`)}>
-          <ProfilePic src={post.userAvatar} alt="Profile" />
+          <PostAvatar 
+            src={userData?.photoURL || '/default-avatar.png'} 
+            alt={userData?.displayName || 'User'} 
+          />
         </ProfileLink>
         <div>
           <strong onClick={() => navigate(`/profile/${post.userId}`)} style={{ cursor: 'pointer' }}>
-            {post.userName}
+            {userData?.displayName || 'Anonymous'}
           </strong>
           <span>{new Date(post.createdAt?.toDate()).toLocaleString()}</span>
         </div>

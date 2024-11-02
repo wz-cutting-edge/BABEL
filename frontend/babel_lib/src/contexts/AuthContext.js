@@ -45,7 +45,7 @@ export function AuthProvider({ children }) {
         // Redirect to home if on protected routes
         const currentPath = window.location.pathname;
         if (currentPath.startsWith('/user') || currentPath.startsWith('/admin')) {
-          navigate('/');
+          navigate('/home');
         }
       }
       setLoading(false);
