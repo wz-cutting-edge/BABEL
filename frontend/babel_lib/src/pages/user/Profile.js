@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { db, storage } from '../../services/firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Camera, Edit2, Book, Video, Heart } from 'lucide-react';
+import { Camera, Book, Video, Heart } from 'lucide-react';
 import { Button, Loading, ErrorMessage } from '../../components/common';
-import { collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+import Post from '../../components/posts/Post';
 
 const ProfileWrapper = styled.div`
   padding: 2rem;
@@ -33,14 +34,11 @@ const AvatarSection = styled.div`
   position: relative;
 `;
 
-const Avatar = styled.div`
+const Avatar = styled.img`
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background-image: url(${props => props.src});
-  background-size: cover;
-  background-position: center;
-  background-color: ${props => props.theme.background};
+  object-fit: cover;
 `;
 
 const AvatarUpload = styled.label`
@@ -121,33 +119,99 @@ const Tab = styled.button`
   }
 `;
 
+const PostsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const CollectionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const CollectionCard = styled.div`
+  background: ${props => props.theme.secondaryBackground};
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: ${props => props.theme.textSecondary};
+    font-size: 0.875rem;
+  }
+`;
+
 const Profile = () => {
-  const { user } = useAuth();
+  const { userId } = useParams(); // Get userId from URL
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('collections');
   const [stats, setStats] = useState({
     collections: 0,
     favorites: 0,
-    contributions: 0
+    posts: 0
   });
+  const [collections, setCollections] = useState([]);
+  const navigate = useNavigate();
+
+  const isOwnProfile = currentUser?.uid === userId;
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const profileDoc = await getDoc(doc(db, 'users', user.uid));
-        if (profileDoc.exists()) {
-          setProfile(profileDoc.data());
+        // Fetch user profile
+        const profileDoc = await getDoc(doc(db, 'users', userId));
+        if (!profileDoc.exists()) {
+          setError('User not found');
+          return;
         }
+        setProfile(profileDoc.data());
 
-        // Fetch user stats
-        // This would typically involve multiple queries to count collections, favorites, etc.
-        // For now, using placeholder data
+        // Fetch user's posts
+        const postsQuery = query(
+          collection(db, 'posts'),
+          where('userId', '==', userId),
+          orderBy('createdAt', 'desc')
+        );
+        const postsSnapshot = await getDocs(postsQuery);
+        const postsData = postsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setPosts(postsData);
+
+        // Fetch collections count
+        const collectionsQuery = query(
+          collection(db, 'collections'),
+          where('userId', '==', userId)
+        );
+        const collectionsSnapshot = await getDocs(collectionsQuery);
+        const collectionsData = collectionsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setCollections(collectionsData);
+
         setStats({
-          collections: 5,
-          favorites: 12,
-          contributions: 3
+          collections: collectionsSnapshot.size,
+          posts: postsData.length,
+          favorites: profileDoc.data().favorites?.length || 0
         });
       } catch (err) {
         console.error('Error fetching profile:', err);
@@ -157,22 +221,23 @@ const Profile = () => {
       }
     };
 
-    if (user) {
+    if (userId) {
       fetchProfile();
     }
-  }, [user]);
+  }, [userId]);
 
   const handleAvatarChange = async (e) => {
+    if (!isOwnProfile) return;
     const file = e.target.files[0];
     if (!file) return;
 
     try {
       setLoading(true);
-      const storageRef = ref(storage, `avatars/${user.uid}`);
+      const storageRef = ref(storage, `avatars/${userId}`);
       await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(storageRef);
 
-      await updateDoc(doc(db, 'users', user.uid), {
+      await updateDoc(doc(db, 'users', userId), {
         photoURL: downloadURL
       });
 
@@ -197,14 +262,16 @@ const Profile = () => {
       <ProfileHeader>
         <AvatarSection>
           <Avatar src={profile.photoURL || '/default-avatar.png'} />
-          <AvatarUpload>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-            />
-            <Camera size={20} />
-          </AvatarUpload>
+          {isOwnProfile && (
+            <AvatarUpload>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+              />
+              <Camera size={20} />
+            </AvatarUpload>
+          )}
         </AvatarSection>
 
         <ProfileInfo>
@@ -218,12 +285,12 @@ const Profile = () => {
               <p>Collections</p>
             </StatCard>
             <StatCard>
-              <h3>{stats.favorites}</h3>
-              <p>Favorites</p>
+              <h3>{stats.posts}</h3>
+              <p>Posts</p>
             </StatCard>
             <StatCard>
-              <h3>{stats.contributions}</h3>
-              <p>Contributions</p>
+              <h3>{stats.favorites}</h3>
+              <p>Favorites</p>
             </StatCard>
           </Stats>
         </ProfileInfo>
@@ -239,24 +306,49 @@ const Profile = () => {
             Collections
           </Tab>
           <Tab
+            active={activeTab === 'posts'}
+            onClick={() => setActiveTab('posts')}
+          >
+            <Video size={20} />
+            Posts
+          </Tab>
+          <Tab
             active={activeTab === 'favorites'}
             onClick={() => setActiveTab('favorites')}
           >
             <Heart size={20} />
             Favorites
           </Tab>
-          <Tab
-            active={activeTab === 'contributions'}
-            onClick={() => setActiveTab('contributions')}
-          >
-            <Video size={20} />
-            Contributions
-          </Tab>
         </TabList>
 
-        {/* Tab content would go here */}
-        {/* This would typically be implemented as separate components */}
-        {/* for collections, favorites, and contributions lists */}
+        {activeTab === 'collections' && (
+          <CollectionsGrid>
+            {collections.map(collection => (
+              <CollectionCard
+                key={collection.id}
+                onClick={() => navigate(`/collections/${collection.id}`)}
+              >
+                <h3>{collection.name}</h3>
+                <p>{collection.items?.length || 0} items</p>
+              </CollectionCard>
+            ))}
+          </CollectionsGrid>
+        )}
+
+        {activeTab === 'posts' && (
+          <PostsContainer>
+            {posts.map(post => (
+              <Post key={post.id} post={post} />
+            ))}
+            {posts.length === 0 && <p>No posts yet</p>}
+          </PostsContainer>
+        )}
+
+        {activeTab === 'favorites' && (
+          <PostsContainer>
+            <p>No favorites yet</p>
+          </PostsContainer>
+        )}
       </TabsContainer>
     </ProfileWrapper>
   );

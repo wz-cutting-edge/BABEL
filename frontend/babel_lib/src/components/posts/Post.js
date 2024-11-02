@@ -65,6 +65,13 @@ const CommentSection = styled.div`
   margin-top: 1rem;
 `;
 
+const ProfileLink = styled.div`
+  cursor: pointer;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 const Post = React.forwardRef(({ post }, ref) => {
   const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
@@ -98,9 +105,13 @@ const Post = React.forwardRef(({ post }, ref) => {
   return (
     <PostWrapper ref={ref}>
       <PostHeader>
-        <ProfilePic src={post.userAvatar} alt="Profile" />
+        <ProfileLink onClick={() => navigate(`/profile/${post.userId}`)}>
+          <ProfilePic src={post.userAvatar} alt="Profile" />
+        </ProfileLink>
         <div>
-          <strong>{post.userName}</strong>
+          <strong onClick={() => navigate(`/profile/${post.userId}`)} style={{ cursor: 'pointer' }}>
+            {post.userName}
+          </strong>
           <span>{new Date(post.createdAt?.toDate()).toLocaleString()}</span>
         </div>
       </PostHeader>

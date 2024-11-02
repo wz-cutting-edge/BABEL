@@ -31,6 +31,7 @@ const AppRoutes = () => {
       <Route path="/collections" element={<PrivateRoute><Collections /></PrivateRoute>} />
       <Route path="/collections/:collectionId" element={<PrivateRoute><CollectionViewer /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+      <Route path="/profile/:userId" element={<Profile />} />
       <Route path="/search" element={<PrivateRoute><Search /></PrivateRoute>} />
       <Route path="/forums" element={<PrivateRoute><Forums /></PrivateRoute>} />
       <Route path="/media/:mediaId" element={<PrivateRoute><MediaViewer /></PrivateRoute>} />
