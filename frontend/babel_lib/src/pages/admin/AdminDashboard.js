@@ -64,6 +64,7 @@ const AdminDashboard = () => {
 
   const navItems = [
     { label: 'Dashboard', icon: <BarChart size={20} />, path: '/admin' },
+    { label: 'Forums', icon: <MessageSquare size={20} />, path: '/forums' },
     { label: 'Customer Support', icon: <MessageSquare size={20} />, path: '/admin/support' },
     { label: 'User Reports', icon: <Flag size={20} />, path: '/admin/reports' },
     { label: 'Media Uploader', icon: <Upload size={20} />, path: '/admin/upload' }

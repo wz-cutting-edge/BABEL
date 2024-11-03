@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { db, storage } from '../../services/firebase/config';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Camera, Book, Video, Heart } from 'lucide-react';
 import { Button, Loading, ErrorMessage } from '../../components/common';
@@ -67,6 +67,22 @@ const AvatarUpload = styled.label`
 
 const ProfileInfo = styled.div`
   flex: 1;
+
+  h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+  }
+
+  .email {
+    color: ${props => props.theme.textSecondary};
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .bio {
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
 `;
 
 const Stats = styled.div`

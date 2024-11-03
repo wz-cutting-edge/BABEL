@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { BookOpen, Moon, Sun, LogOut, Users, Flag, Upload, User, Layout } from 'lucide-react';
+import { BookOpen, Moon, Sun, LogOut, Users, Flag, Upload, User, Layout, MessageSquare } from 'lucide-react';
 import { auth } from '../../services/firebase/config';
 import { signOut } from 'firebase/auth';
 import {
@@ -51,6 +51,10 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
           <StyledNavLink to="/admin">
             <Layout size={20} />
             <span>Dashboard</span>
+          </StyledNavLink>
+          <StyledNavLink to="/forums">
+            <MessageSquare size={20} />
+            <span>Forums</span>
           </StyledNavLink>
           <StyledNavLink to="/admin/support">
             <Users size={20} />
