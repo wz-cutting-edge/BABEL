@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase/config';
-import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion, getDoc, runTransaction } from 'firebase/firestore';
+import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion, getDoc, runTransaction, onSnapshot } from 'firebase/firestore';
 import { MessageCircle, Book, Heart } from 'lucide-react';
 import Comments from './Comments';
 
@@ -72,17 +72,28 @@ const ProfileLink = styled.div`
 `;
 
 const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
+  const [postData, setPostData] = useState(post);
   const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const hasLiked = post.likedBy?.includes(user?.uid);
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'posts', post.id), (doc) => {
+      if (doc.exists()) {
+        setPostData({ id: doc.id, ...doc.data() });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [post.id]);
+
+  const hasLiked = postData.likedBy?.includes(user?.uid);
 
   const handleLike = async (e) => {
     e.stopPropagation();
     if (!user) return;
     
-    const postRef = doc(db, 'posts', post.id);
+    const postRef = doc(db, 'posts', postData.id);
     try {
       await updateDoc(postRef, {
         likes: increment(hasLiked ? -1 : 1),
@@ -96,54 +107,47 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
   };
 
   const handleMediaClick = () => {
-    if (post.mediaId) {
-      navigate(`/media/${post.mediaId}`);
+    if (postData.mediaId) {
+      navigate(`/media/${postData.mediaId}`);
     }
   };
-
-  console.log('Post userData:', {
-    postId: post.id,
-    userId: post.userId,
-    userData: userData,
-    displayName: userData?.displayName
-  });
 
   return (
     <PostWrapper ref={ref}>
       <PostHeader>
-        <ProfileLink onClick={() => navigate(`/profile/${post.userId}`)}>
+        <ProfileLink onClick={() => navigate(`/profile/${postData.userId}`)}>
           <PostAvatar 
             src={userData?.photoURL || '/default-avatar.png'} 
             alt={userData?.username || 'Anonymous'} 
-            onClick={() => navigate(`/profile/${post.userId}`)}
+            onClick={() => navigate(`/profile/${postData.userId}`)}
             style={{ cursor: 'pointer' }}
           />
         </ProfileLink>
         <div>
-          <strong onClick={() => navigate(`/profile/${post.userId}`)} style={{ cursor: 'pointer' }}>
+          <strong onClick={() => navigate(`/profile/${postData.userId}`)} style={{ cursor: 'pointer' }}>
             {userData?.username || 'Anonymous'}
           </strong>
           <div style={{ fontSize: '0.8rem', color: props => props.theme.textSecondary }}>
-            {new Date(post.createdAt?.toDate()).toLocaleString()}
+            {new Date(postData.createdAt?.toDate()).toLocaleString()}
           </div>
         </div>
       </PostHeader>
-      <p>{post.content}</p>
-      {post.imageUrl && <PostImage src={post.imageUrl} alt="Post content" />}
+      <p>{postData.content}</p>
+      {postData.imageUrl && <PostImage src={postData.imageUrl} alt="Post content" />}
       <ActionBar>
         <ActionButton onClick={handleLike} active={hasLiked}>
-          <Heart fill={hasLiked ? "currentColor" : "none"} /> {post.likes || 0}
+          <Heart fill={hasLiked ? "currentColor" : "none"} /> {postData.likes || 0}
         </ActionButton>
         <ActionButton onClick={() => setShowComments(!showComments)}>
-          <MessageCircle /> {post.comments || 0}
+          <MessageCircle /> {postData.comments || 0}
         </ActionButton>
-        {post.mediaId && (
+        {postData.mediaId && (
           <ActionButton onClick={handleMediaClick}>
             <Book /> View Content
           </ActionButton>
         )}
       </ActionBar>
-      {showComments && <Comments postId={post.id} />}
+      {showComments && <Comments postId={postData.id} />}
     </PostWrapper>
   );
 });

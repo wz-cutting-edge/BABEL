@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { db } from '../../services/firebase/config';
-import { collection, query, where, orderBy, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, updateDoc, increment, doc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 
 const CommentWrapper = styled.div`
@@ -75,15 +75,26 @@ const Comments = ({ postId }) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    await addDoc(collection(db, 'comments'), {
-      postId,
-      userId: user.uid,
-      content: newComment,
-      createdAt: serverTimestamp()
-    });
+    try {
+      // Add the comment
+      await addDoc(collection(db, 'comments'), {
+        postId,
+        userId: user.uid,
+        content: newComment,
+        createdAt: serverTimestamp()
+      });
 
-    setNewComment('');
-    fetchComments();
+      // Update post's comment count
+      const postRef = doc(db, 'posts', postId);
+      await updateDoc(postRef, {
+        comments: increment(1)
+      });
+
+      setNewComment('');
+      fetchComments();
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
   };
 
   useEffect(() => {

@@ -115,10 +115,8 @@ const Forums = () => {
           id: doc.id,
           ...doc.data()
         }));
-        console.log('Posts Data:', postsData);
         
         const userIds = [...new Set(postsData.map(post => post.userId))];
-        console.log('Unique User IDs:', userIds);
         
         const usersSnapshot = await Promise.all(
           userIds.map(userId => getDoc(doc(db, 'users', userId)))
@@ -130,7 +128,6 @@ const Forums = () => {
             userData[doc.id] = doc.data();
           }
         });
-        console.log('Fetched User Data:', userData);
         
         setUsersData(userData);
         setPosts(postsData);
