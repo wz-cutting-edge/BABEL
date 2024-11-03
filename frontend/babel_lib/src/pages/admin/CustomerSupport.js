@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { MessageCircle, User, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 const PageWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
 `;

@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { BarChart, Users, Flag, MessageSquare, Upload } from 'lucide-react';
 
 const DashboardWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
   display: grid;
   grid-template-columns: 250px 1fr;
   gap: 2rem;
@@ -66,7 +66,6 @@ const AdminDashboard = () => {
     { label: 'Dashboard', icon: <BarChart size={20} />, path: '/admin' },
     { label: 'Customer Support', icon: <MessageSquare size={20} />, path: '/admin/support' },
     { label: 'User Reports', icon: <Flag size={20} />, path: '/admin/reports' },
-    { label: 'Analytics', icon: <BarChart size={20} />, path: '/admin/analytics' },
     { label: 'Media Uploader', icon: <Upload size={20} />, path: '/admin/upload' }
   ];
 

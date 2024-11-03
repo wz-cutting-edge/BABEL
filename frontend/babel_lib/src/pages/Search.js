@@ -11,7 +11,7 @@ import { db } from '../services/firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 
 const SearchWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
 `;
 
 const SearchHeader = styled.div`

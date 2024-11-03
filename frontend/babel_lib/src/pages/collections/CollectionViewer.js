@@ -7,7 +7,7 @@ import { Book, Video, ExternalLink } from 'lucide-react';
 import { Loading, ErrorMessage } from '../../components/common';
 
 const ViewerWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
 `;
 
 const CollectionHeader = styled.div`

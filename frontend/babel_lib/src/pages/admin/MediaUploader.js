@@ -10,7 +10,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes } from 'firebase/storage';
 
 const UploaderWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
   max-width: 800px;
   margin: 0 auto;
   display: flex;
@@ -121,6 +121,21 @@ const ImagePreview = styled.div`
   }
 `;
 
+const CoverDropZone = styled(DropZone)`
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  background: ${props => props.theme.secondaryBackground};
+  
+  img {
+    max-height: 250px;
+    object-fit: contain;
+  }
+`;
+
 const MediaUploader = () => {
   const { user, isAdmin } = useAuth();
   
@@ -183,6 +198,27 @@ const MediaUploader = () => {
     }
   });
 
+  const onCoverDrop = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      setCoverImage(file);
+      setCoverPreview(URL.createObjectURL(file));
+    }
+  }, []);
+
+  const {
+    getRootProps: getCoverRootProps,
+    getInputProps: getCoverInputProps,
+    isDragActive: isCoverDragActive
+  } = useDropzone({
+    onDrop: onCoverDrop,
+    accept: {
+      'image/*': ['.jpg', '.jpeg', '.png']
+    },
+    maxSize: 5 * 1024 * 1024, // 5MB
+    multiple: false
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -234,42 +270,52 @@ const MediaUploader = () => {
       
       <div>
         <h3>Cover Image</h3>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              setCoverImage(file);
-              setCoverPreview(URL.createObjectURL(file));
-            }
-          }}
-        />
-        {coverPreview && (
-          <ImagePreview>
+        {coverPreview ? (
+          <CoverDropZone {...getCoverRootProps()}>
+            <input {...getCoverInputProps()} />
             <img src={coverPreview} alt="Cover preview" />
-            <button onClick={() => {
-              setCoverImage(null);
-              setCoverPreview(null);
-            }}>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setCoverImage(null);
+                setCoverPreview(null);
+              }}
+            >
               <X size={16} />
             </button>
-          </ImagePreview>
+          </CoverDropZone>
+        ) : (
+          <CoverDropZone {...getCoverRootProps()}>
+            <input {...getCoverInputProps()} />
+            {isCoverDragActive ? (
+              <p>Drop the cover image here...</p>
+            ) : (
+              <div>
+                <Upload size={48} />
+                <p>Drag and drop a cover image here, or click to select</p>
+                <small>Supported formats: JPG, PNG</small>
+              </div>
+            )}
+          </CoverDropZone>
         )}
       </div>
 
-      <DropZone {...getRootProps()}>
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <p>Drop the file here...</p>
-        ) : (
-          <div>
-            <Upload size={48} />
-            <p>Drag and drop a file here, or click to select</p>
-            <small>Supported formats: PDF, MP4, MOV, JPG, PNG</small>
-          </div>
-        )}
-      </DropZone>
+      <div>
+        <h3>Media File</h3>
+        <DropZone {...getRootProps()}>
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p>Drop the file here...</p>
+          ) : (
+            <div>
+              <Upload size={48} />
+              <p>Drag and drop a file here, or click to select</p>
+              <small>Supported formats: PDF, MP4, MOV, AVI, MKV</small>
+              <small>Maximum size: 500MB</small>
+            </div>
+          )}
+        </DropZone>
+      </div>
 
       {preview && (
         <Preview>

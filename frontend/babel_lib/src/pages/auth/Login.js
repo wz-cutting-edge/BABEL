@@ -72,32 +72,22 @@ const LinkText = styled.p`
 `;
 
 const Login = () => {
-  const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-
+    setLoading(true);
+    
     try {
-      const { user } = await login(email, password);
-      
-      // Check user role in Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      const userData = userDoc.data();
-      
-      if (userData?.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/user/home');
-      }
-    } catch (err) {
-      setError('Failed to log in: ' + err.message);
+      await login(email, password);
+    } catch (error) {
+      setError('Failed to sign in: ' + error.message);
     } finally {
       setLoading(false);
     }

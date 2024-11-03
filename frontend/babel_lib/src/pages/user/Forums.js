@@ -8,7 +8,7 @@ import CreatePost from '../../components/posts/CreatePost';
 import Post from '../../components/posts/Post';
 
 const ForumsWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
   max-width: 800px;
   margin: 0 auto;
 `;

@@ -22,7 +22,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import CollectionMediaItem from '../../components/features/collections/CollectionMediaItem';
 
 const CollectionsWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
 `;
 
 const Header = styled.div`

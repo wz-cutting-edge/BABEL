@@ -54,12 +54,41 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, [navigate]);
 
+  const login = async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      const userData = userDoc.data();
+      
+      // Check if user is admin and redirect accordingly
+      if (userData?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+      
+      return userCredential;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const register = (email, password) => createUserWithEmailAndPassword(auth, email, password);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   const value = {
     user,
     isAdmin,
-    login: (email, password) => signInWithEmailAndPassword(auth, email, password),
-    register: (email, password) => createUserWithEmailAndPassword(auth, email, password),
-    logout: () => signOut(auth),
+    login,
+    register,
+    logout,
   };
 
   return (

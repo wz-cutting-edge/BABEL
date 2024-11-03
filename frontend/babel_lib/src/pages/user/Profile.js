@@ -3,14 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { db, storage } from '../../services/firebase/config';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Camera, Book, Video, Heart } from 'lucide-react';
 import { Button, Loading, ErrorMessage } from '../../components/common';
 import Post from '../../components/posts/Post';
 
 const ProfileWrapper = styled.div`
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
 `;
@@ -154,6 +154,54 @@ const CollectionCard = styled.div`
   }
 `;
 
+const MediaGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const MediaCard = styled.div`
+  background: ${props => props.theme.secondaryBackground};
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: ${props => props.theme.textSecondary};
+    font-size: 0.875rem;
+  }
+`;
+
+const MediaThumbnail = styled.div`
+  width: 100%;
+  height: 200px;
+  background-image: url(${props => props.image});
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+
+  svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 2rem;
+  }
+`;
+
 const Profile = () => {
   const { userId } = useParams(); // Get userId from URL
   const { user: currentUser } = useAuth();
@@ -168,6 +216,7 @@ const Profile = () => {
     posts: 0
   });
   const [collections, setCollections] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const navigate = useNavigate();
 
   const isOwnProfile = currentUser?.uid === userId;
@@ -224,6 +273,23 @@ const Profile = () => {
     if (userId) {
       fetchProfile();
     }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    
+    const favoritesRef = collection(db, `users/${userId}/favorites`);
+    const q = query(favoritesRef, orderBy('addedAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const favoritesData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setFavorites(favoritesData);
+    });
+    
+    return () => unsubscribe();
   }, [userId]);
 
   const handleAvatarChange = async (e) => {
@@ -345,9 +411,23 @@ const Profile = () => {
         )}
 
         {activeTab === 'favorites' && (
-          <PostsContainer>
-            <p>No favorites yet</p>
-          </PostsContainer>
+          <MediaGrid>
+            {favorites.map(favorite => (
+              <MediaCard 
+                key={favorite.id}
+                onClick={() => navigate(`/media/${favorite.id}`)}
+              >
+                <MediaThumbnail image={favorite.thumbnail}>
+                  {favorite.type === 'book' ? <Book size={24} /> : <Video size={24} />}
+                </MediaThumbnail>
+                <div style={{ padding: '1rem' }}>
+                  <h3>{favorite.title}</h3>
+                  <small>{favorite.type}</small>
+                </div>
+              </MediaCard>
+            ))}
+            {favorites.length === 0 && <p>No favorites yet</p>}
+          </MediaGrid>
         )}
       </TabsContainer>
     </ProfileWrapper>

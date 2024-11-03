@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { BookOpen, Moon, Sun, LogOut, Users, Flag, BarChart2, Upload, User, Layout } from 'lucide-react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { BookOpen, Moon, Sun, LogOut, Users, Flag, Upload, User, Layout } from 'lucide-react';
 import { auth } from '../../services/firebase/config';
+import { signOut } from 'firebase/auth';
 import {
   HeaderWrapper,
   Container,
@@ -17,6 +18,7 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const scrollDirection = useScrollDirection();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +27,15 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
@@ -49,10 +60,6 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
             <Flag size={20} />
             <span>User Reports</span>
           </StyledNavLink>
-          <StyledNavLink to="/admin/analytics">
-            <BarChart2 size={20} />
-            <span>Analytics</span>
-          </StyledNavLink>
           <StyledNavLink to="/admin/upload">
             <Upload size={20} />
             <span>Media Uploader</span>
@@ -67,7 +74,7 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
           <IconButton onClick={toggleTheme}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </IconButton>
-          <IconButton onClick={() => auth.signOut()}>
+          <IconButton onClick={handleLogout}>
             <LogOut size={20} />
           </IconButton>
         </NavGroup>

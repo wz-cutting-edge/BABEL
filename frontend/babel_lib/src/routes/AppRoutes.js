@@ -16,7 +16,6 @@ import NotFound from '../pages/NotFound';
 import Forums from '../pages/user/Forums';
 import MediaViewer from '../pages/media/MediaViewer';
 import PrivateRoute from '../components/common/PrivateRoute';
-import Analytics from '../pages/admin/Analytics';
 import MediaUploader from '../pages/admin/MediaUploader';
 
 const AppRoutes = () => {
@@ -40,7 +39,6 @@ const AppRoutes = () => {
       <Route path="/admin" element={<PrivateRoute requireAdmin><AdminDashboard /></PrivateRoute>} />
       <Route path="/admin/support" element={<PrivateRoute requireAdmin><CustomerSupport /></PrivateRoute>} />
       <Route path="/admin/reports" element={<PrivateRoute requireAdmin><UserReports /></PrivateRoute>} />
-      <Route path="/admin/analytics" element={<PrivateRoute requireAdmin><Analytics /></PrivateRoute>} />
       <Route path="/admin/upload" element={<PrivateRoute requireAdmin><MediaUploader /></PrivateRoute>} />
       
       {/* 404 Route */}
