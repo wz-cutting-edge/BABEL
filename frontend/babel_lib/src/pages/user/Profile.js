@@ -242,6 +242,11 @@ const Profile = () => {
       try {
         // Fetch user profile
         const profileDoc = await getDoc(doc(db, 'users', userId));
+        console.log('Profile Data:', {
+          exists: profileDoc.exists(),
+          data: profileDoc.data(),
+          userId: userId
+        });
         if (!profileDoc.exists()) {
           setError('User not found');
           return;
@@ -357,7 +362,7 @@ const Profile = () => {
         </AvatarSection>
 
         <ProfileInfo>
-          <h2>{profile.displayName}</h2>
+          <h2>{profile.username}</h2>
           <p>{profile.email}</p>
           <p>{profile.bio || 'No bio yet'}</p>
 

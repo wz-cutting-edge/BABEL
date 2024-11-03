@@ -115,11 +115,11 @@ const Forums = () => {
           id: doc.id,
           ...doc.data()
         }));
+        console.log('Posts Data:', postsData);
         
-        // Get unique user IDs from posts
         const userIds = [...new Set(postsData.map(post => post.userId))];
+        console.log('Unique User IDs:', userIds);
         
-        // Fetch user data for each unique user
         const usersSnapshot = await Promise.all(
           userIds.map(userId => getDoc(doc(db, 'users', userId)))
         );
@@ -130,6 +130,7 @@ const Forums = () => {
             userData[doc.id] = doc.data();
           }
         });
+        console.log('Fetched User Data:', userData);
         
         setUsersData(userData);
         setPosts(postsData);
@@ -167,8 +168,8 @@ const Forums = () => {
       const usersRef = collection(db, 'users');
       const q = query(
         usersRef,
-        where('displayName', '>=', value),
-        where('displayName', '<=', value + '\uf8ff'),
+        where('username', '>=', value),
+        where('username', '<=', value + '\uf8ff'),
         limit(5)
       );
       
@@ -227,9 +228,9 @@ const Forums = () => {
           <SearchResults>
             {searchResults.map(user => (
               <UserResult key={user.id} onClick={() => handleUserClick(user.id)}>
-                <img src={user.photoURL || '/default-avatar.png'} alt={user.displayName} />
+                <img src={user.photoURL || '/default-avatar.png'} alt={user.username} />
                 <div>
-                  <strong>{user.displayName}</strong>
+                  <strong>{user.username}</strong>
                   {user.email && <div>{user.email}</div>}
                 </div>
               </UserResult>

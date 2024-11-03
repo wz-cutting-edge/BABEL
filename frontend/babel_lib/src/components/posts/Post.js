@@ -71,11 +71,10 @@ const ProfileLink = styled.div`
   }
 `;
 
-const Post = React.forwardRef(({ post }, ref) => {
+const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
   const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
 
   const hasLiked = post.likedBy?.includes(user?.uid);
 
@@ -102,22 +101,12 @@ const Post = React.forwardRef(({ post }, ref) => {
     }
   };
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userDoc = await getDoc(doc(db, 'users', post.userId));
-        if (userDoc.exists()) {
-          setUserData(userDoc.data());
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    if (post.userId) {
-      fetchUserData();
-    }
-  }, [post.userId]);
+  console.log('Post userData:', {
+    postId: post.id,
+    userId: post.userId,
+    userData: userData,
+    displayName: userData?.displayName
+  });
 
   return (
     <PostWrapper ref={ref}>
@@ -125,14 +114,18 @@ const Post = React.forwardRef(({ post }, ref) => {
         <ProfileLink onClick={() => navigate(`/profile/${post.userId}`)}>
           <PostAvatar 
             src={userData?.photoURL || '/default-avatar.png'} 
-            alt={userData?.displayName || 'User'} 
+            alt={userData?.username || 'Anonymous'} 
+            onClick={() => navigate(`/profile/${post.userId}`)}
+            style={{ cursor: 'pointer' }}
           />
         </ProfileLink>
         <div>
           <strong onClick={() => navigate(`/profile/${post.userId}`)} style={{ cursor: 'pointer' }}>
-            {userData?.displayName || 'Anonymous'}
+            {userData?.username || 'Anonymous'}
           </strong>
-          <span>{new Date(post.createdAt?.toDate()).toLocaleString()}</span>
+          <div style={{ fontSize: '0.8rem', color: props => props.theme.textSecondary }}>
+            {new Date(post.createdAt?.toDate()).toLocaleString()}
+          </div>
         </div>
       </PostHeader>
       <p>{post.content}</p>
