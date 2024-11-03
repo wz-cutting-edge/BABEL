@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { db, storage } from '../../services/firebase/config';
 import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Camera, Book, Video, Heart } from 'lucide-react';
+import { Camera, Book, Video, Heart, AlertTriangle } from 'lucide-react';
 import { Button, Loading, ErrorMessage } from '../../components/common';
 import Post from '../../components/posts/Post';
 
@@ -218,9 +218,38 @@ const MediaThumbnail = styled.div`
   }
 `;
 
+const ActionButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: ${props => props.theme.text};
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+
+  &:hover {
+    background: ${props => props.theme.hover};
+  }
+`;
+
+const BanButton = styled(ActionButton)`
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
+  color: ${props => props.theme.error};
+  background: ${props => props.theme.error}20;
+  padding: 0.5rem 1rem;
+  
+  &:hover {
+    background: ${props => props.theme.error}40;
+  }
+`;
+
 const Profile = () => {
   const { userId } = useParams(); // Get userId from URL
-  const { user: currentUser } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -235,7 +264,7 @@ const Profile = () => {
   const [favorites, setFavorites] = useState([]);
   const navigate = useNavigate();
 
-  const isOwnProfile = currentUser?.uid === userId;
+  const isOwnProfile = user?.uid === userId;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -358,6 +387,12 @@ const Profile = () => {
               />
               <Camera size={20} />
             </AvatarUpload>
+          )}
+          {isAdmin && !isOwnProfile && (
+            <BanButton>
+              <AlertTriangle size={16} />
+              Ban User
+            </BanButton>
           )}
         </AvatarSection>
 

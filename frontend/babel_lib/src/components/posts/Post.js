@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase/config';
 import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion, getDoc, runTransaction, onSnapshot } from 'firebase/firestore';
-import { MessageCircle, Book, Heart } from 'lucide-react';
+import { MessageCircle, Book, Heart, Trash2 } from 'lucide-react';
 import Comments from './Comments';
 
 const PostWrapper = styled.div`
@@ -131,6 +131,11 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
             {new Date(postData.createdAt?.toDate()).toLocaleString()}
           </div>
         </div>
+        {isAdmin && (
+          <ActionButton onClick={() => onDelete(post.id)} style={{ color: props => props.theme.error }}>
+            <Trash2 size={16} />
+          </ActionButton>
+        )}
       </PostHeader>
       <p>{postData.content}</p>
       {postData.imageUrl && <PostImage src={postData.imageUrl} alt="Post content" />}
@@ -147,7 +152,7 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
           </ActionButton>
         )}
       </ActionBar>
-      {showComments && <Comments postId={postData.id} />}
+      {showComments && <Comments postId={postData.id} isAdmin={isAdmin} />}
     </PostWrapper>
   );
 });

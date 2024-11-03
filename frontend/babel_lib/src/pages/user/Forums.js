@@ -200,6 +200,8 @@ const Forums = () => {
     setSearchResults([]);
   };
 
+  console.log('Admin status:', isAdmin);
+
   return (
     <ForumsWrapper>
       <h2>Community Forum</h2>

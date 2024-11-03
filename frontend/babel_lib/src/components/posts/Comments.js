@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { db } from '../../services/firebase/config';
-import { collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, updateDoc, increment, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, updateDoc, increment, doc, deleteDoc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
+import { Trash2 } from 'lucide-react';
 
 const CommentWrapper = styled.div`
   padding: 1rem 0;
@@ -53,7 +54,14 @@ const CommentTimestamp = styled.span`
   font-size: 0.8rem;
 `;
 
-const Comments = ({ postId }) => {
+const ActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 0.5rem;
+`;
+
+const Comments = ({ postId, isAdmin }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const { user } = useAuth();
@@ -97,6 +105,26 @@ const Comments = ({ postId }) => {
     }
   };
 
+  const handleDeleteComment = async (commentId) => {
+    if (!isAdmin) return;
+    
+    try {
+      // Delete the comment
+      await deleteDoc(doc(db, 'comments', commentId));
+      
+      // Update post's comment count
+      const postRef = doc(db, 'posts', postId);
+      await updateDoc(postRef, {
+        comments: increment(-1)
+      });
+      
+      // Refresh comments
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
   useEffect(() => {
     fetchComments();
   }, [postId]);
@@ -113,13 +141,20 @@ const Comments = ({ postId }) => {
       </CommentForm>
       {comments.map(comment => (
         <CommentItem key={comment.id}>
-          <CommentAvatar src={comment.userAvatar} alt="User avatar" />
+          <CommentAvatar src={comment.userAvatar || '/default-avatar.png'} alt="User avatar" />
           <CommentContent>
             <CommentHeader>
-              <CommentAuthor>{comment.userName}</CommentAuthor>
-              <CommentTimestamp>
-                {new Date(comment.createdAt?.toDate()).toLocaleString()}
-              </CommentTimestamp>
+              <div>
+                <CommentAuthor>{comment.userName || 'Anonymous'}</CommentAuthor>
+                <CommentTimestamp>
+                  {new Date(comment.createdAt?.toDate()).toLocaleString()}
+                </CommentTimestamp>
+              </div>
+              {isAdmin && (
+                <ActionButton onClick={() => handleDeleteComment(comment.id)}>
+                  <Trash2 size={16} />
+                </ActionButton>
+              )}
             </CommentHeader>
             <p>{comment.content}</p>
           </CommentContent>
