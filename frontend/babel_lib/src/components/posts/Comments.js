@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { db } from '../../services/firebase/config';
-import { collection, query, where, orderBy, getDocs, addDoc, serverTimestamp, updateDoc, increment, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, addDoc, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp, updateDoc, increment, writeBatch } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 import { Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CommentWrapper = styled.div`
   padding: 1rem 0;
@@ -64,42 +65,76 @@ const ActionButton = styled.button`
 const Comments = ({ postId, isAdmin }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [usersData, setUsersData] = useState({});
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const fetchComments = async () => {
+  useEffect(() => {
+    if (!postId) return;
+
+    const commentsRef = collection(db, 'comments');
     const q = query(
-      collection(db, 'comments'),
+      commentsRef,
       where('postId', '==', postId),
       orderBy('createdAt', 'desc')
     );
-    const snapshot = await getDocs(q);
-    setComments(snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })));
-  };
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const commentsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Fetch user data for all commenters
+      const userIds = [...new Set(commentsData.map(comment => comment.userId))];
+      const usersSnapshot = await Promise.all(
+        userIds.map(userId => getDoc(doc(db, 'users', userId)))
+      );
+      
+      const userData = {};
+      usersSnapshot.forEach(doc => {
+        if (doc.exists()) {
+          userData[doc.id] = doc.data();
+        }
+      });
+      
+      setUsersData(userData);
+      setComments(commentsData);
+    });
+
+    return () => unsubscribe();
+  }, [postId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !user) return;
 
     try {
+      // Get the current post data
+      const postRef = doc(db, 'posts', postId);
+      const postSnap = await getDoc(postRef);
+      
+      if (!postSnap.exists()) {
+        console.error('Post not found');
+        return;
+      }
+
       // Add the comment
       await addDoc(collection(db, 'comments'), {
         postId,
         userId: user.uid,
-        content: newComment,
+        content: newComment.trim(),
         createdAt: serverTimestamp()
       });
 
-      // Update post's comment count
-      const postRef = doc(db, 'posts', postId);
+      // Update the post's comment count
+      const currentCount = postSnap.data().commentCount || 0;
       await updateDoc(postRef, {
-        comments: increment(1)
+        commentCount: currentCount + 1
       });
 
+      // Clear the input field
       setNewComment('');
-      fetchComments();
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -109,45 +144,63 @@ const Comments = ({ postId, isAdmin }) => {
     if (!isAdmin) return;
     
     try {
+      // Get the current post data
+      const postRef = doc(db, 'posts', postId);
+      const postSnap = await getDoc(postRef);
+      
+      if (!postSnap.exists()) {
+        console.error('Post not found');
+        return;
+      }
+
       // Delete the comment
       await deleteDoc(doc(db, 'comments', commentId));
       
-      // Update post's comment count
-      const postRef = doc(db, 'posts', postId);
+      // Update the post's comment count
+      const currentCount = postSnap.data().commentCount || 0;
       await updateDoc(postRef, {
-        comments: increment(-1)
+        commentCount: Math.max(0, currentCount - 1) // Ensure we don't go below 0
       });
-      
-      // Refresh comments
-      fetchComments();
     } catch (error) {
       console.error('Error deleting comment:', error);
     }
   };
 
-  useEffect(() => {
-    fetchComments();
-  }, [postId]);
+  const handleUserClick = (userId) => {
+    navigate(`/profile/${userId}`);
+  };
 
   return (
     <CommentWrapper>
-      <CommentForm onSubmit={handleSubmit}>
-        <CommentInput
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
-        />
-        <button type="submit">Post</button>
-      </CommentForm>
+      {user && (
+        <CommentForm onSubmit={handleSubmit}>
+          <CommentInput
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Add a comment..."
+          />
+          <button type="submit">Post</button>
+        </CommentForm>
+      )}
       {comments.map(comment => (
         <CommentItem key={comment.id}>
-          <CommentAvatar src={comment.userAvatar || '/default-avatar.png'} alt="User avatar" />
+          <CommentAvatar 
+            src={usersData[comment.userId]?.photoURL || '/default-avatar.png'} 
+            alt={usersData[comment.userId]?.username || 'Anonymous'} 
+            onClick={() => handleUserClick(comment.userId)}
+            style={{ cursor: 'pointer' }}
+          />
           <CommentContent>
             <CommentHeader>
               <div>
-                <CommentAuthor>{comment.userName || 'Anonymous'}</CommentAuthor>
+                <CommentAuthor 
+                  onClick={() => handleUserClick(comment.userId)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {usersData[comment.userId]?.username || 'Anonymous'}
+                </CommentAuthor>
                 <CommentTimestamp>
-                  {new Date(comment.createdAt?.toDate()).toLocaleString()}
+                  {comment.createdAt?.toDate().toLocaleString()}
                 </CommentTimestamp>
               </div>
               {isAdmin && (

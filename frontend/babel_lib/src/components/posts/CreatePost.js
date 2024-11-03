@@ -82,27 +82,18 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim() && !selectedImage) return;
+    if (!content.trim()) return;
 
     try {
-      let imageUrl = '';
-      if (selectedImage) {
-        const imageRef = ref(storage, `posts/${Date.now()}_${selectedImage.name}`);
-        await uploadBytes(imageRef, selectedImage);
-        imageUrl = await getDownloadURL(imageRef);
-      }
-
       await addDoc(collection(db, 'posts'), {
         content,
-        imageUrl,
         userId: user.uid,
-        userName: user.displayName || 'Anonymous',
-        userAvatar: user.photoURL || '',
         createdAt: serverTimestamp(),
         likes: 0,
-        comments: 0
+        commentCount: 0,
+        mediaId: selectedImage?.id || null,
       });
-
+      
       setContent('');
       setSelectedImage(null);
       setPreviewUrl('');

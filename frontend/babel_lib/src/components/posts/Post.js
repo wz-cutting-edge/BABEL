@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase/config';
-import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion, getDoc, runTransaction, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion, getDoc, runTransaction, onSnapshot, deleteDoc, setDoc } from 'firebase/firestore';
 import { MessageCircle, Book, Heart, Trash2 } from 'lucide-react';
 import Comments from './Comments';
 
@@ -72,35 +72,82 @@ const ProfileLink = styled.div`
 `;
 
 const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
-  const [postData, setPostData] = useState(post);
+  const [postData, setPostData] = useState({
+    ...post,
+    commentCount: post.commentCount || 0
+  });
   const [showComments, setShowComments] = useState(false);
+  const [hasLiked, setHasLiked] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Listen to post updates
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'posts', post.id), (doc) => {
       if (doc.exists()) {
-        setPostData({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        setPostData({ 
+          id: doc.id, 
+          ...data,
+          commentCount: data.commentCount || 0
+        });
       }
     });
 
     return () => unsubscribe();
   }, [post.id]);
 
-  const hasLiked = postData.likedBy?.includes(user?.uid);
+  // Check if user has liked the post
+  useEffect(() => {
+    const checkLike = async () => {
+      if (!user) {
+        setHasLiked(false);
+        return;
+      }
+
+      try {
+        const likeId = `${post.id}_${user.uid}`;
+        const likeDoc = await getDoc(doc(db, 'likes', likeId));
+        setHasLiked(likeDoc.exists());
+      } catch (error) {
+        console.error('Error checking like status:', error);
+      }
+    };
+
+    checkLike();
+  }, [post.id, user]);
 
   const handleLike = async (e) => {
     e.stopPropagation();
-    if (!user) return;
+    if (!user) {
+      console.log('Please log in to like posts');
+      return;
+    }
+
+    const likeId = `${post.id}_${user.uid}`;
+    const likeRef = doc(db, 'likes', likeId);
+    const postRef = doc(db, 'posts', post.id);
     
-    const postRef = doc(db, 'posts', postData.id);
     try {
-      await updateDoc(postRef, {
-        likes: increment(hasLiked ? -1 : 1),
-        likedBy: hasLiked 
-          ? arrayRemove(user.uid)
-          : arrayUnion(user.uid)
-      });
+      if (hasLiked) {
+        // Remove like
+        await deleteDoc(likeRef);
+        await updateDoc(postRef, {
+          likes: increment(-1)
+        });
+        setHasLiked(false);
+      } else {
+        // Add like
+        await setDoc(likeRef, {
+          userId: user.uid,
+          postId: post.id,
+          createdAt: serverTimestamp()
+        });
+        await updateDoc(postRef, {
+          likes: increment(1)
+        });
+        setHasLiked(true);
+      }
     } catch (error) {
       console.error('Error updating like:', error);
     }
@@ -144,7 +191,7 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
           <Heart fill={hasLiked ? "currentColor" : "none"} /> {postData.likes || 0}
         </ActionButton>
         <ActionButton onClick={() => setShowComments(!showComments)}>
-          <MessageCircle /> {postData.comments || 0}
+          <MessageCircle /> {postData.commentCount || 0}
         </ActionButton>
         {postData.mediaId && (
           <ActionButton onClick={handleMediaClick}>
