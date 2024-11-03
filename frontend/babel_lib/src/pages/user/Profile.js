@@ -247,6 +247,41 @@ const BanButton = styled(ActionButton)`
   }
 `;
 
+const BanModal = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: ${props => props.theme.background};
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 90%;
+  max-width: 400px;
+`;
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+`;
+
+const BanOption = styled(Button)`
+  width: 100%;
+  margin-bottom: 0.5rem;
+  background: ${props => props.theme.error}20;
+  color: ${props => props.theme.error};
+  
+  &:hover {
+    background: ${props => props.theme.error}40;
+  }
+`;
+
 const Profile = () => {
   const { userId } = useParams(); // Get userId from URL
   const { user, isAdmin } = useAuth();
@@ -263,6 +298,7 @@ const Profile = () => {
   const [collections, setCollections] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const navigate = useNavigate();
+  const [showBanModal, setShowBanModal] = useState(false);
 
   const isOwnProfile = user?.uid === userId;
 
@@ -369,6 +405,28 @@ const Profile = () => {
     }
   };
 
+  const handleBanUser = async (days) => {
+    if (!isAdmin || isOwnProfile) return;
+    
+    try {
+      const banEndDate = days === 'permanent' 
+        ? 'permanent'
+        : new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+      await updateDoc(doc(db, 'users', userId), {
+        banned: true,
+        banEndDate: banEndDate,
+        banStartDate: new Date()
+      });
+
+      setShowBanModal(false);
+      setError(`User has been banned ${days === 'permanent' ? 'permanently' : `for ${days} days`}`);
+    } catch (err) {
+      console.error('Error banning user:', err);
+      setError('Failed to ban user');
+    }
+  };
+
   if (loading) return <Loading />;
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
   if (!profile) return null;
@@ -389,7 +447,7 @@ const Profile = () => {
             </AvatarUpload>
           )}
           {isAdmin && !isOwnProfile && (
-            <BanButton>
+            <BanButton onClick={() => setShowBanModal(true)}>
               <AlertTriangle size={16} />
               Ban User
             </BanButton>
@@ -486,6 +544,21 @@ const Profile = () => {
           </MediaGrid>
         )}
       </TabsContainer>
+
+      {showBanModal && (
+        <>
+          <Overlay onClick={() => setShowBanModal(false)} />
+          <BanModal>
+            <h3>Select Ban Duration</h3>
+            <BanOption onClick={() => handleBanUser(3)}>3 Days</BanOption>
+            <BanOption onClick={() => handleBanUser(7)}>7 Days</BanOption>
+            <BanOption onClick={() => handleBanUser(14)}>14 Days</BanOption>
+            <BanOption onClick={() => handleBanUser(28)}>28 Days</BanOption>
+            <BanOption onClick={() => handleBanUser('permanent')}>Permanent Ban</BanOption>
+            <Button onClick={() => setShowBanModal(false)}>Cancel</Button>
+          </BanModal>
+        </>
+      )}
     </ProfileWrapper>
   );
 };
