@@ -79,9 +79,28 @@ const Comments = ({ postId, isAdmin }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [usersData, setUsersData] = useState({});
+  const [userData, setUserData] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showReportModal, setShowReportModal] = useState(null);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchUserData = async () => {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        setUserData(userDoc.data());
+      }
+    };
+    
+    fetchUserData();
+  }, [user]);
+
+  const isBanned = userData?.banned && (
+    userData.banEndDate === 'permanent' || 
+    new Date() < userData.banEndDate?.toDate()
+  );
 
   useEffect(() => {
     if (!postId) return;
@@ -186,7 +205,7 @@ const Comments = ({ postId, isAdmin }) => {
 
   return (
     <CommentWrapper>
-      {user && (
+      {user && !isBanned ? (
         <CommentForm onSubmit={handleSubmit}>
           <CommentInput
             value={newComment}
@@ -195,7 +214,11 @@ const Comments = ({ postId, isAdmin }) => {
           />
           <button type="submit">Post</button>
         </CommentForm>
-      )}
+      ) : isBanned ? (
+        <div style={{ color: 'red', marginBottom: '1rem' }}>
+          You are currently banned and cannot comment.
+        </div>
+      ) : null}
       {comments.map(comment => (
         <CommentItem key={comment.id}>
           <CommentAvatar 

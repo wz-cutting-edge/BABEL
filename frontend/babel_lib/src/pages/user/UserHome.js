@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, orderBy, getDocs, limit, startAfter, getDoc, doc, onSnapshot, updateDoc, where } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, limit, startAfter, getDoc, doc, onSnapshot, updateDoc, where, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../services/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useDataFetching } from '../../hooks/data/useDataFetching';
@@ -164,12 +164,14 @@ const UserHome = () => {
     }
   };
 
-  const handleNotificationClose = async (ticketId) => {
+  const handleDismissNotification = async (ticketId) => {
     try {
       const ticketRef = doc(db, 'support_tickets', ticketId);
       await updateDoc(ticketRef, {
-        notificationSeen: true
+        notificationSeen: true,
+        lastUpdate: serverTimestamp()
       });
+      setShowNotification(false);
     } catch (error) {
       console.error('Error updating notification status:', error);
     }
@@ -193,15 +195,12 @@ const UserHome = () => {
         )}
         {resolvedTickets.length > 0 && showNotification && (
           <NotificationBanner>
-            <span>
-              {resolvedTickets.length === 1 
-                ? 'Your support ticket has been resolved!'
-                : `${resolvedTickets.length} support tickets have been resolved!`}
-              <Link to="/support">View details</Link>
-            </span>
+            <div>
+              Your support ticket has been resolved! 
+              <Link to="/support">Click here to view it</Link>
+            </div>
             <CloseButton onClick={() => {
-              setShowNotification(false);
-              resolvedTickets.forEach(ticket => handleNotificationClose(ticket.id));
+              resolvedTickets.forEach(ticket => handleDismissNotification(ticket.id));
             }}>✕</CloseButton>
           </NotificationBanner>
         )}
