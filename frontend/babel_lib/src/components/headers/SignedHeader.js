@@ -13,6 +13,7 @@ import {
   DropdownItem
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
+import { signOut } from 'firebase/auth';
 
 const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,6 +33,16 @@ const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
     if (user?.uid) {
       navigate(`/profile/${user.uid}`);
       setIsDropdownOpen(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setIsDropdownOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
@@ -83,7 +94,7 @@ const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
               <DropdownItem as={Link} to="/forums">
                 <MessageSquare size={16} /> Forums
               </DropdownItem>
-              <DropdownItem onClick={() => auth.signOut()}>
+              <DropdownItem onClick={handleLogout}>
                 <LogOut size={16} /> Log out
               </DropdownItem>
             </DropdownContent>

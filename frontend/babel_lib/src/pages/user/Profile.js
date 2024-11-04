@@ -378,6 +378,13 @@ const Profile = () => {
     return () => unsubscribe();
   }, [userId]);
 
+  useEffect(() => {
+    // If user is logged out and this isn't a public profile view, redirect to home
+    if (!user && !userId) {
+      navigate('/');
+    }
+  }, [user, userId, navigate]);
+
   const handleAvatarChange = async (e) => {
     if (!isOwnProfile) return;
     const file = e.target.files[0];
