@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase/config';
 import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, arrayRemove, arrayUnion, getDoc, runTransaction, onSnapshot, deleteDoc, setDoc } from 'firebase/firestore';
-import { MessageCircle, Book, Heart, Trash2 } from 'lucide-react';
+import { MessageCircle, Book, Heart, Trash2, MoreVertical } from 'lucide-react';
 import Comments from './Comments';
+import ReportModal from '../modals/ReportModal';
 
 const PostWrapper = styled.div`
   background-color: ${props => props.theme.secondaryBackground};
@@ -71,6 +72,18 @@ const ProfileLink = styled.div`
   }
 `;
 
+const MoreOptions = styled.div`
+  position: relative;
+  margin-left: auto;
+`;
+
+const OptionsButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${props => props.theme.textSecondary};
+`;
+
 const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
   const [postData, setPostData] = useState({
     ...post,
@@ -80,6 +93,7 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
   const [hasLiked, setHasLiked] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Listen to post updates
   useEffect(() => {
@@ -183,6 +197,18 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
             <Trash2 size={16} />
           </ActionButton>
         )}
+        <MoreOptions>
+          <OptionsButton onClick={() => setShowReportModal(true)}>
+            <MoreVertical size={16} />
+          </OptionsButton>
+          <ReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            contentId={postData.id}
+            contentType="post"
+            reportedUserId={postData.userId}
+          />
+        </MoreOptions>
       </PostHeader>
       <p>{postData.content}</p>
       {postData.imageUrl && <PostImage src={postData.imageUrl} alt="Post content" />}

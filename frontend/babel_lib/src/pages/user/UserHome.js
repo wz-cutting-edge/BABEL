@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, orderBy, getDocs, limit, startAfter } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, limit, startAfter, getDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../../services/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useDataFetching } from '../../hooks/data/useDataFetching';
@@ -43,9 +43,34 @@ const Post = styled.div`
   border-radius: 5px;
 `;
 
+const BanNotification = styled.div`
+  background-color: ${props => props.theme.error}20;
+  color: ${props => props.theme.error};
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  color: ${props => props.theme.error};
+  cursor: pointer;
+  padding: 0.5rem;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 const UserHome = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showBanMessage, setShowBanMessage] = useState(true);
+  const [userData, setUserData] = useState(null);
   const { data: posts, loading, error, refetch } = useDataFetching(
     ['posts', user?.uid],
     async () => {
@@ -65,6 +90,17 @@ const UserHome = () => {
     { deps: [user] }
   );
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user) return;
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        setUserData(userDoc.data());
+      }
+    };
+    fetchUserData();
+  }, [user]);
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -79,6 +115,17 @@ const UserHome = () => {
   return (
     <ErrorBoundary>
       <UserHomeWrapper>
+        {userData?.banned && showBanMessage && (
+          <BanNotification>
+            <span>
+              Your account has been banned 
+              {userData.banEndDate === 'permanent' 
+                ? ' permanently.' 
+                : ` until ${new Date(userData.banEndDate.toDate()).toLocaleDateString()}.`}
+            </span>
+            <CloseButton onClick={() => setShowBanMessage(false)}>✕</CloseButton>
+          </BanNotification>
+        )}
         <h3>Recent Activity</h3>
         {loading ? (
           <Loading />

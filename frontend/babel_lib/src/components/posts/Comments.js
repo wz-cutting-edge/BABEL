@@ -3,8 +3,9 @@ import styled from 'styled-components';
 import { db } from '../../services/firebase/config';
 import { collection, query, where, orderBy, addDoc, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp, updateDoc, increment, writeBatch } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
-import { Trash2 } from 'lucide-react';
+import { Trash2, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ReportModal from '../modals/ReportModal';
 
 const CommentWrapper = styled.div`
   padding: 1rem 0;
@@ -62,12 +63,25 @@ const ActionButton = styled.button`
   margin-left: 0.5rem;
 `;
 
+const MoreOptions = styled.div`
+  position: relative;
+  margin-left: auto;
+`;
+
+const OptionsButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${props => props.theme.textSecondary};
+`;
+
 const Comments = ({ postId, isAdmin }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [usersData, setUsersData] = useState({});
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showReportModal, setShowReportModal] = useState(null);
 
   useEffect(() => {
     if (!postId) return;
@@ -203,14 +217,23 @@ const Comments = ({ postId, isAdmin }) => {
                   {comment.createdAt?.toDate().toLocaleString()}
                 </CommentTimestamp>
               </div>
-              {isAdmin && (
-                <ActionButton onClick={() => handleDeleteComment(comment.id)}>
-                  <Trash2 size={16} />
-                </ActionButton>
-              )}
+              <MoreOptions>
+                <OptionsButton onClick={() => setShowReportModal(comment.id)}>
+                  <MoreVertical size={16} />
+                </OptionsButton>
+              </MoreOptions>
             </CommentHeader>
             <p>{comment.content}</p>
           </CommentContent>
+          {showReportModal === comment.id && (
+            <ReportModal
+              isOpen={true}
+              onClose={() => setShowReportModal(null)}
+              contentId={comment.id}
+              contentType="comment"
+              reportedUserId={comment.userId}
+            />
+          )}
         </CommentItem>
       ))}
     </CommentWrapper>

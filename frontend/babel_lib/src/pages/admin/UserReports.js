@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
-import { Flag, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Flag, AlertTriangle, CheckCircle, Trash2 } from 'lucide-react';
+import { db } from '../../services/firebase/config';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import ReportDetails from '../../components/admin/ReportDetailsComponent';
 
 const PageWrapper = styled.div`
   padding: 6rem 2rem 2rem;
@@ -42,18 +45,115 @@ const StatusBadge = styled.span`
   color: white;
 `;
 
+const ActionButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: ${props => props.color || props.theme.text};
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const ActionGroup = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
 const UserReports = () => {
   const { user, loading, isAdmin } = useAuth();
-  const [reports] = useState([
-    { 
-      id: 1, 
-      reportedUser: 'user123', 
-      reason: 'Inappropriate content', 
-      status: 'pending',
-      date: '2024-03-10' 
-    },
-    // Add more mock reports
-  ]);
+  const [reports, setReports] = useState([]);
+  const [reportedContent, setReportedContent] = useState({});
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const reportsRef = collection(db, 'reports');
+    const q = query(reportsRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const reportsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().createdAt?.toDate().toLocaleString()
+      }));
+
+      // Fetch content and user details for each report
+      const contentDetails = {};
+      await Promise.all(reportsData.map(async (report) => {
+        const contentRef = doc(db, report.contentType + 's', report.contentId);
+        const contentSnap = await getDoc(contentRef);
+        if (contentSnap.exists()) {
+          contentDetails[report.contentId] = contentSnap.data();
+        }
+
+        // Get reporter username
+        const userRef = doc(db, 'users', report.reportedUserId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          contentDetails[report.reportedUserId] = userSnap.data();
+        }
+      }));
+
+      setReportedContent(contentDetails);
+      setReports(reportsData);
+    });
+
+    return () => unsubscribe();
+  }, [isAdmin]);
+
+  const handleResolve = async (reportId, message) => {
+    try {
+      // Get the report data first
+      const reportRef = doc(db, 'reports', reportId);
+      const reportSnap = await getDoc(reportRef);
+      const reportData = reportSnap.data();
+
+      // Update report status
+      await updateDoc(reportRef, {
+        status: 'resolved'
+      });
+
+      // If there's a message, create a notification
+      if (message) {
+        await addDoc(collection(db, 'notifications'), {
+          userId: reportData.reportedUserId,
+          type: 'report_resolved',
+          message,
+          createdAt: serverTimestamp(),
+          read: false
+        });
+      }
+    } catch (error) {
+      console.error('Error resolving report:', error);
+    }
+  };
+
+  const handleDelete = async (report) => {
+    try {
+      // Delete the reported content
+      await deleteDoc(doc(db, report.contentType + 's', report.contentId));
+      
+      // Update report status
+      await updateDoc(doc(db, 'reports', report.id), {
+        status: 'resolved'
+      });
+
+      // Create notification for the content owner
+      await addDoc(collection(db, 'notifications'), {
+        userId: report.reportedUserId,
+        type: 'content_removed',
+        contentType: report.contentType,
+        message: `Your ${report.contentType} has been removed for violating community guidelines.`,
+        createdAt: serverTimestamp(),
+        read: false
+      });
+    } catch (error) {
+      console.error('Error handling report:', error);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (!user || !isAdmin) return <Navigate to="/" />;
@@ -61,35 +161,15 @@ const UserReports = () => {
   return (
     <PageWrapper>
       <h2>User Reports</h2>
-      
-      <ReportsTable>
-        <thead>
-          <tr>
-            <Th>Date</Th>
-            <Th>Reported User</Th>
-            <Th>Reason</Th>
-            <Th>Status</Th>
-            <Th>Actions</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map(report => (
-            <tr key={report.id}>
-              <Td>{report.date}</Td>
-              <Td>{report.reportedUser}</Td>
-              <Td>{report.reason}</Td>
-              <Td>
-                <StatusBadge status={report.status}>
-                  {report.status}
-                </StatusBadge>
-              </Td>
-              <Td>
-                {/* Add action buttons */}
-              </Td>
-            </tr>
-          ))}
-        </tbody>
-      </ReportsTable>
+      {reports.map(report => (
+        <ReportDetails
+          key={report.id}
+          report={report}
+          reportedContent={reportedContent[report.contentId]}
+          onResolve={handleResolve}
+          onDelete={handleDelete}
+        />
+      ))}
     </PageWrapper>
   );
 };

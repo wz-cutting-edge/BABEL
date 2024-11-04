@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { storage, db } from '../../services/firebase/config';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDoc, doc } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 import { Image, X } from 'lucide-react';
 import { ErrorMessage } from '../common/common';
@@ -100,39 +100,52 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim() && !selectedImage) return;
+    console.log('Current user:', user);
     
-    setLoading(true);
-    setError(null);
+    if (!content.trim() || !user) return;
 
     try {
-      let imageUrl = null;
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        console.error('User document not found');
+        return;
+      }
       
+      const userData = userDoc.data();
+      console.log('User data:', userData);
+      console.log('User ban status:', {
+        banned: userData.banned,
+        banEndDate: userData.banEndDate,
+        role: userData.role
+      });
+      console.log('Post data being sent:', {
+        content: content.trim(),
+        userId: user.uid,
+        createdAt: serverTimestamp()
+      });
+
+      const postData = {
+        content: content.trim(),
+        userId: user.uid,
+        createdAt: serverTimestamp()
+      };
+
       if (selectedImage) {
-        // Upload image to Firebase Storage
-        const imageRef = ref(storage, `posts/${user.uid}/${Date.now()}_${selectedImage.name}`);
-        await uploadBytes(imageRef, selectedImage);
-        imageUrl = await getDownloadURL(imageRef);
+        const imageRef = ref(storage, `posts/${Date.now()}_${selectedImage.name}`);
+        const uploadResult = await uploadBytes(imageRef, selectedImage);
+        const imageUrl = await getDownloadURL(uploadResult.ref);
+        postData.imageUrl = imageUrl;
       }
 
-      // Create post with image URL if exists
-      await addDoc(collection(db, 'posts'), {
-        content,
-        userId: user.uid,
-        createdAt: serverTimestamp(),
-        likes: 0,
-        commentCount: 0,
-        imageUrl, // Add the image URL to the post data
-      });
+      await addDoc(collection(db, 'posts'), postData);
       
       setContent('');
       setSelectedImage(null);
       setPreviewUrl('');
     } catch (error) {
       console.error('Error creating post:', error);
-      setError('Failed to create post');
-    } finally {
-      setLoading(false);
+      console.error('Error details:', error.code, error.message);
+      setError(error.message);
     }
   };
 
