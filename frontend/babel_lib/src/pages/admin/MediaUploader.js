@@ -136,6 +136,39 @@ const CoverDropZone = styled(DropZone)`
   }
 `;
 
+const genres = [
+  'fiction',
+  'non-fiction',
+  'Action/Adventure',
+  'fantasy',
+  'graphic novel',
+  'horror',
+  'mystery',
+  'romance',
+  'supernatural',
+  'comedy',
+  'sci-fi',
+  'thriller/suspense',
+  'drama',
+  'children',
+  'young adult',
+  'adult',
+  'art/photography',
+  'biography',
+  'culinary/food',
+  'poetry',
+  'history',
+  'math',
+  'language',
+  'science',
+  'social science',
+  'essay',
+  'how-to/guide',
+  'informative',
+  'technology',
+  'travel'
+];
+
 const MediaUploader = () => {
   const { user, isAdmin } = useAuth();
   
@@ -235,7 +268,10 @@ const MediaUploader = () => {
         coverImage,
         {
           ...metadata,
-          tags: metadata.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+          tags: metadata.tags
+            .split(',')
+            .map(tag => tag.trim().toLowerCase())
+            .filter(Boolean)
         },
         user,
         isAdmin
@@ -348,13 +384,18 @@ const MediaUploader = () => {
           <option value="article">Article</option>
         </Select>
         
-        <Input
-          type="text"
-          placeholder="Genre"
+        <Select
           value={metadata.genre}
           onChange={e => setMetadata({ ...metadata, genre: e.target.value })}
           required
-        />
+        >
+          <option value="">Select a genre...</option>
+          {genres.map(genre => (
+            <option key={genre} value={genre}>
+              {genre}
+            </option>
+          ))}
+        </Select>
         
         <TextArea
           placeholder="Description"
