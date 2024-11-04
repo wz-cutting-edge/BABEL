@@ -17,14 +17,19 @@ const SupportGrid = styled.div`
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 2rem;
-  height: calc(100vh - 250px);
+  height: calc(100vh - 350px);
   margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    height: calc(100vh - 400px);
+  }
 `;
 
 const TicketList = styled.div`
   border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   overflow-y: auto;
+  max-height: calc(100vh - 450px);
 `;
 
 const TicketItem = styled.div`
@@ -45,7 +50,8 @@ const ChatWindow = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+  overflow: hidden;
 `;
 
 const ChatHeader = styled.div`
@@ -57,6 +63,16 @@ const ChatMessages = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
+  scrollbar-width: thin;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: ${props => props.theme.border};
+    border-radius: 3px;
+  }
 `;
 
 const Message = styled.div`
