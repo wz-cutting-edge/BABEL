@@ -18,6 +18,7 @@ import MediaViewer from '../pages/media/MediaViewer';
 import PrivateRoute from '../components/common/PrivateRoute';
 import MediaUploader from '../pages/admin/MediaUploader';
 import Settings from '../pages/user/Settings';
+import UserCustomerSupport from '../pages/user/UserCustomerSupport';
 
 const AppRoutes = () => {
   return (
@@ -29,6 +30,7 @@ const AppRoutes = () => {
       {/* Protected Routes */}
       <Route path="/user/home" element={<PrivateRoute><UserHome /></PrivateRoute>} />
       <Route path="/collections" element={<PrivateRoute><Collections /></PrivateRoute>} />
+      <Route path="/support" element={<PrivateRoute><UserCustomerSupport /></PrivateRoute>} />
       <Route path="/collections/:collectionId" element={<PrivateRoute><CollectionViewer /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/profile/:userId" element={<Profile />} />

@@ -3,6 +3,8 @@ import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { MessageCircle, User, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { db } from '../../services/firebase/config';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 const PageWrapper = styled.div`
   padding: 6rem 2rem 2rem;
@@ -100,23 +102,109 @@ const Button = styled.button`
   }
 `;
 
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return '';
+  
+  try {
+    if (typeof timestamp === 'object' && timestamp.toDate) {
+      return timestamp.toDate().toLocaleString();
+    }
+    return new Date(timestamp).toLocaleString();
+  } catch (error) {
+    console.error('Error formatting timestamp:', error);
+    return timestamp;
+  }
+};
+
 const CustomerSupport = () => {
   const { user, loading, isAdmin } = useAuth();
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const [tickets] = useState([
-    {
-      id: 1,
-      userId: 'user123',
-      subject: 'Cannot access my account',
-      status: 'open',
-      lastUpdate: '2024-03-10',
-      messages: [
-        { id: 1, text: 'I cannot log in to my account', isAdmin: false, timestamp: '2024-03-10 10:00' },
-        { id: 2, text: 'Have you tried resetting your password?', isAdmin: true, timestamp: '2024-03-10 10:05' }
-      ]
+  const [tickets, setTickets] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+
+    const ticketsRef = collection(db, 'support_tickets');
+    const q = query(
+      ticketsRef,
+      orderBy('lastUpdate', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const ticketData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setTickets(ticketData);
+    });
+
+    return () => unsubscribe();
+  }, [user, isAdmin]);
+
+  useEffect(() => {
+    if (!selectedTicket) return;
+
+    const ticketRef = doc(db, 'support_tickets', selectedTicket.id);
+    const unsubscribe = onSnapshot(ticketRef, (doc) => {
+      if (doc.exists()) {
+        setSelectedTicket({ id: doc.id, ...doc.data() });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [selectedTicket?.id]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedTicket) return;
+
+    try {
+      const ticketRef = doc(db, 'support_tickets', selectedTicket.id);
+      const message = {
+        text: newMessage,
+        isAdmin: true,
+        timestamp: new Date().toISOString()
+      };
+
+      await updateDoc(ticketRef, {
+        messages: [...selectedTicket.messages, message],
+        lastUpdate: serverTimestamp()
+      });
+
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
-    // Add more mock tickets
-  ]);
+  };
+
+  const handleResolveTicket = async () => {
+    if (!selectedTicket) return;
+
+    try {
+      const ticketRef = doc(db, 'support_tickets', selectedTicket.id);
+      await updateDoc(ticketRef, {
+        status: 'resolved',
+        lastUpdate: serverTimestamp(),
+        notificationSeen: false
+      });
+    } catch (error) {
+      console.error('Error resolving ticket:', error);
+    }
+  };
+
+  const handleCloseTicket = async () => {
+    if (!selectedTicket) return;
+
+    try {
+      const ticketRef = doc(db, 'support_tickets', selectedTicket.id);
+      await updateDoc(ticketRef, {
+        status: 'closed',
+        lastUpdate: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Error closing ticket:', error);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (!user || !isAdmin) return <Navigate to="/" />;
@@ -133,7 +221,7 @@ const CustomerSupport = () => {
               onClick={() => setSelectedTicket(ticket)}
             >
               <div style={{ marginBottom: '0.5rem' }}>
-                <strong>{ticket.subject}</strong>
+                <strong>{ticket.type}</strong>
               </div>
               <div style={{ fontSize: '0.875rem', color: '#666' }}>
                 <User size={14} style={{ marginRight: '0.5rem' }} />
@@ -141,7 +229,14 @@ const CustomerSupport = () => {
               </div>
               <div style={{ fontSize: '0.875rem', color: '#666' }}>
                 <Clock size={14} style={{ marginRight: '0.5rem' }} />
-                {ticket.lastUpdate}
+                {formatTimestamp(ticket.lastUpdate)}
+              </div>
+              <div style={{ 
+                fontSize: '0.875rem', 
+                color: ticket.status === 'resolved' ? '#10B981' : 
+                       ticket.status === 'closed' ? '#DC2626' : '#F59E0B'
+              }}>
+                Status: {ticket.status}
               </div>
             </TicketItem>
           ))}
@@ -151,36 +246,49 @@ const CustomerSupport = () => {
           <ChatWindow>
             <ChatHeader>
               <div>
-                <h3>{selectedTicket.subject}</h3>
+                <h3>{selectedTicket.type}</h3>
                 <small>Ticket #{selectedTicket.id}</small>
               </div>
               <div>
-                <Button style={{ marginRight: '0.5rem' }}>
+                <Button 
+                  style={{ marginRight: '0.5rem' }}
+                  onClick={handleResolveTicket}
+                  disabled={selectedTicket.status === 'resolved'}
+                >
                   <CheckCircle size={16} style={{ marginRight: '0.5rem' }} />
                   Resolve
                 </Button>
-                <Button style={{ background: '#DC2626' }}>
+                <Button 
+                  style={{ background: '#DC2626' }}
+                  onClick={handleCloseTicket}
+                  disabled={selectedTicket.status === 'closed'}
+                >
                   <XCircle size={16} style={{ marginRight: '0.5rem' }} />
                   Close
                 </Button>
               </div>
             </ChatHeader>
             <ChatMessages>
-              {selectedTicket.messages.map(message => (
-                <Message key={message.id} isAdmin={message.isAdmin}>
+              {selectedTicket?.messages?.map((message, index) => (
+                <Message key={`${selectedTicket.id}-${index}`} isAdmin={message.isAdmin}>
                   <div style={{ marginBottom: '0.25rem' }}>
-                    <strong>{message.isAdmin ? 'Support Agent' : selectedTicket.userId}</strong>
+                    <strong>{message.isAdmin ? 'Support Agent' : 'User'}</strong>
                   </div>
                   {message.text}
                   <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.25rem' }}>
-                    {message.timestamp}
+                    {formatTimestamp(message.timestamp)}
                   </div>
                 </Message>
               ))}
             </ChatMessages>
             <ReplyBox>
-              <Input placeholder="Type your reply..." />
-              <Button>Send</Button>
+              <Input 
+                placeholder="Type your reply..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <Button onClick={handleSendMessage}>Send</Button>
             </ReplyBox>
           </ChatWindow>
         ) : (

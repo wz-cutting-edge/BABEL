@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
-import { collection, query, orderBy, getDocs, limit, startAfter, getDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, limit, startAfter, getDoc, doc, onSnapshot, updateDoc, where } from 'firebase/firestore';
 import { db, auth } from '../../services/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useDataFetching } from '../../hooks/data/useDataFetching';
@@ -66,11 +66,29 @@ const CloseButton = styled.button`
   }
 `;
 
+const NotificationBanner = styled.div`
+  background-color: ${props => props.theme.primary}20;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  a {
+    color: ${props => props.theme.primary};
+    text-decoration: underline;
+    margin-left: 0.5rem;
+  }
+`;
+
 const UserHome = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showBanMessage, setShowBanMessage] = useState(true);
   const [userData, setUserData] = useState(null);
+  const [resolvedTickets, setResolvedTickets] = useState([]);
+  const [showNotification, setShowNotification] = useState(true);
   const { data: posts, loading, error, refetch } = useDataFetching(
     ['posts', user?.uid],
     async () => {
@@ -101,12 +119,59 @@ const UserHome = () => {
     fetchUserData();
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    let unsubscribe;
+    try {
+      const ticketsRef = collection(db, 'support_tickets');
+      const q = query(
+        ticketsRef,
+        where('userId', '==', user.uid),
+        where('status', '==', 'resolved'),
+        where('notificationSeen', '==', false)
+      );
+
+      unsubscribe = onSnapshot(q, {
+        next: (snapshot) => {
+          const tickets = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setResolvedTickets(tickets);
+        },
+        error: (error) => {
+          console.error('Error listening to tickets:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Error setting up ticket listener:', error);
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [user]);
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
+    }
+  };
+
+  const handleNotificationClose = async (ticketId) => {
+    try {
+      const ticketRef = doc(db, 'support_tickets', ticketId);
+      await updateDoc(ticketRef, {
+        notificationSeen: true
+      });
+    } catch (error) {
+      console.error('Error updating notification status:', error);
     }
   };
 
@@ -125,6 +190,20 @@ const UserHome = () => {
             </span>
             <CloseButton onClick={() => setShowBanMessage(false)}>✕</CloseButton>
           </BanNotification>
+        )}
+        {resolvedTickets.length > 0 && showNotification && (
+          <NotificationBanner>
+            <span>
+              {resolvedTickets.length === 1 
+                ? 'Your support ticket has been resolved!'
+                : `${resolvedTickets.length} support tickets have been resolved!`}
+              <Link to="/support">View details</Link>
+            </span>
+            <CloseButton onClick={() => {
+              setShowNotification(false);
+              resolvedTickets.forEach(ticket => handleNotificationClose(ticket.id));
+            }}>✕</CloseButton>
+          </NotificationBanner>
         )}
         <h3>Recent Activity</h3>
         {loading ? (
