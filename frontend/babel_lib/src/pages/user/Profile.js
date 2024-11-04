@@ -293,7 +293,9 @@ const Profile = () => {
   const [stats, setStats] = useState({
     collections: 0,
     favorites: 0,
-    posts: 0
+    posts: 0,
+    followers: 0,
+    following: 0
   });
   const [collections, setCollections] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -347,7 +349,9 @@ const Profile = () => {
         setStats({
           collections: collectionsSnapshot.size,
           posts: postsData.length,
-          favorites: profileDoc.data().favorites?.length || 0
+          favorites: profileDoc.data().favorites?.length ?? 0,
+          followers: profileDoc.data().followers ?? 0,
+          following: profileDoc.data().following ?? 0
         });
       } catch (err) {
         console.error('Error fetching profile:', err);
@@ -452,11 +456,31 @@ const Profile = () => {
     try {
       const followRef = doc(db, `users/${user.uid}/following/${userId}`);
       const followedRef = doc(db, `users/${userId}/followers/${user.uid}`);
+      const userRef = doc(db, 'users', userId);
+      const currentUserRef = doc(db, 'users', user.uid);
       
       if (isFollowing) {
         // Unfollow
         await deleteDoc(followRef);
         await deleteDoc(followedRef);
+        
+        // Update follower/following counts
+        await updateDoc(userRef, {
+          followers: Math.max((profile.followers ?? 0) - 1, 0)
+        });
+        await updateDoc(currentUserRef, {
+          following: Math.max((user.following ?? 0) - 1, 0)
+        });
+
+        // Update local state
+        setProfile(prev => ({
+          ...prev,
+          followers: Math.max((prev.followers ?? 0) - 1, 0)
+        }));
+        setStats(prev => ({
+          ...prev,
+          followers: Math.max((prev.followers ?? 0) - 1, 0)
+        }));
       } else {
         // Follow
         await setDoc(followRef, {
@@ -465,6 +489,24 @@ const Profile = () => {
         await setDoc(followedRef, {
           timestamp: serverTimestamp()
         });
+        
+        // Update follower/following counts
+        await updateDoc(userRef, {
+          followers: Math.max((profile.followers ?? 0) + 1, 0)
+        });
+        await updateDoc(currentUserRef, {
+          following: Math.max((user.following ?? 0) + 1, 0)
+        });
+
+        // Update local state
+        setProfile(prev => ({
+          ...prev,
+          followers: Math.max((prev.followers ?? 0) + 1, 0)
+        }));
+        setStats(prev => ({
+          ...prev,
+          followers: Math.max((prev.followers ?? 0) + 1, 0)
+        }));
       }
     } catch (error) {
       console.error('Error updating follow status:', error);
