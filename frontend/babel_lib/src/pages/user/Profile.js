@@ -310,52 +310,46 @@ const Profile = () => {
       try {
         // Fetch user profile
         const profileDoc = await getDoc(doc(db, 'users', userId));
-        console.log('Profile Data:', {
-          exists: profileDoc.exists(),
-          data: profileDoc.data(),
-          userId: userId
-        });
         if (!profileDoc.exists()) {
           setError('User not found');
           return;
         }
         setProfile(profileDoc.data());
 
-        // Fetch user's posts
-        const postsQuery = query(
-          collection(db, 'posts'),
-          where('userId', '==', userId),
-          orderBy('createdAt', 'desc')
-        );
-        const postsSnapshot = await getDocs(postsQuery);
+        // Count followers and following
+        const followersQuery = query(collection(db, `users/${userId}/followers`));
+        const followingQuery = query(collection(db, `users/${userId}/following`));
+        
+        const [followersSnapshot, followingSnapshot, postsSnapshot, collectionsSnapshot] = await Promise.all([
+          getDocs(followersQuery),
+          getDocs(followingQuery),
+          getDocs(query(collection(db, 'posts'), where('userId', '==', userId), orderBy('createdAt', 'desc'))),
+          getDocs(query(collection(db, 'collections'), where('userId', '==', userId)))
+        ]);
+
         const postsData = postsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        setPosts(postsData);
-
-        // Fetch collections count
-        const collectionsQuery = query(
-          collection(db, 'collections'),
-          where('userId', '==', userId)
-        );
-        const collectionsSnapshot = await getDocs(collectionsQuery);
+        
         const collectionsData = collectionsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
+        
         setCollections(collectionsData);
+        setPosts(postsData);
 
         setStats({
           collections: collectionsSnapshot.size,
           posts: postsData.length,
           favorites: profileDoc.data().favorites?.length ?? 0,
-          followers: profileDoc.data().followers ?? 0,
-          following: profileDoc.data().following ?? 0
+          followers: followersSnapshot.size,
+          following: followingSnapshot.size
         });
-      } catch (err) {
-        console.error('Error fetching profile:', err);
-        setError('Failed to load profile');
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setError('Error fetching profile');
       } finally {
         setLoading(false);
       }
