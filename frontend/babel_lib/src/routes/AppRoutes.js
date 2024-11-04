@@ -17,6 +17,7 @@ import Forums from '../pages/user/Forums';
 import MediaViewer from '../pages/media/MediaViewer';
 import PrivateRoute from '../components/common/PrivateRoute';
 import MediaUploader from '../pages/admin/MediaUploader';
+import Settings from '../pages/user/Settings';
 
 const AppRoutes = () => {
   return (
@@ -40,6 +41,9 @@ const AppRoutes = () => {
       <Route path="/admin/support" element={<PrivateRoute requireAdmin><CustomerSupport /></PrivateRoute>} />
       <Route path="/admin/reports" element={<PrivateRoute requireAdmin><UserReports /></PrivateRoute>} />
       <Route path="/admin/upload" element={<PrivateRoute requireAdmin><MediaUploader /></PrivateRoute>} />
+      
+      {/* Settings Route */}
+      <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
       
       {/* 404 Route */}
       <Route path="*" element={<NotFound />} />

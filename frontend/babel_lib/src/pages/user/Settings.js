@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { auth, db } from '../../services/firebase/config';
-import { updateProfile, updateEmail, updatePassword } from 'firebase/auth';
+import { updateProfile } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Button, ErrorMessage } from '../../components/common';
-import { User, Mail, Lock, Bell, Eye, EyeOff } from 'lucide-react';
+import { User } from 'lucide-react';
 
 const SettingsWrapper = styled.div`
   padding: 6rem 2rem 2rem;
@@ -58,35 +58,18 @@ const Input = styled.input`
   }
 `;
 
-const ToggleWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+const TextArea = styled.textarea`
   padding: 0.75rem;
   border: 1px solid ${props => props.theme.border};
   border-radius: 4px;
-`;
+  background: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+  min-height: 100px;
+  resize: vertical;
 
-const Toggle = styled.button`
-  width: 48px;
-  height: 24px;
-  background: ${props => props.active ? props.theme.primary : props.theme.border};
-  border-radius: 12px;
-  position: relative;
-  transition: background-color 0.2s;
-  border: none;
-  cursor: pointer;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: ${props => props.active ? '26px' : '2px'};
-    width: 20px;
-    height: 20px;
-    background: white;
-    border-radius: 50%;
-    transition: left 0.2s;
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
   }
 `;
 
@@ -94,18 +77,9 @@ const Settings = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
-    email: user?.email || '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    newsletter: false
+    bio: user?.bio || ''
   });
 
   const handleInputChange = (e) => {
@@ -121,58 +95,20 @@ const Settings = () => {
     setError(null);
 
     try {
-      if (formData.displayName !== user.displayName) {
-        await updateProfile(auth.currentUser, {
-          displayName: formData.displayName
-        });
-        await updateDoc(doc(db, 'users', user.uid), {
-          displayName: formData.displayName
-        });
-      }
-
-      if (formData.email !== user.email) {
-        await updateEmail(auth.currentUser, formData.email);
-        await updateDoc(doc(db, 'users', user.uid), {
-          email: formData.email
-        });
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateUserPassword = async (e) => {
-    e.preventDefault();
-    if (formData.newPassword !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await updatePassword(auth.currentUser, formData.newPassword);
-      setFormData({
-        ...formData,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+      await updateProfile(auth.currentUser, {
+        displayName: formData.displayName
+      });
+      
+      await updateDoc(doc(db, 'users', user.uid), {
+        displayName: formData.displayName,
+        username: formData.displayName,
+        bio: formData.bio
       });
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleNotification = (type) => {
-    setNotifications(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }));
   };
 
   return (
@@ -194,95 +130,18 @@ const Settings = () => {
             />
           </FormGroup>
           <FormGroup>
-            <Label>Email</Label>
-            <Input
-              type="email"
-              name="email"
-              value={formData.email}
+            <Label>Bio</Label>
+            <TextArea
+              name="bio"
+              value={formData.bio}
               onChange={handleInputChange}
+              placeholder="Tell us about yourself..."
             />
           </FormGroup>
           <Button type="submit" disabled={loading}>
             Save Changes
           </Button>
         </Form>
-      </Section>
-
-      <Section>
-        <SectionTitle>
-          <Lock size={20} />
-          Security
-        </SectionTitle>
-        <Form onSubmit={updateUserPassword}>
-          <FormGroup>
-            <Label>Current Password</Label>
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              name="currentPassword"
-              value={formData.currentPassword}
-              onChange={handleInputChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>New Password</Label>
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Confirm New Password</Label>
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-            />
-          </FormGroup>
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            {showPassword ? 'Hide' : 'Show'} Password
-          </Button>
-          <Button type="submit" disabled={loading}>
-            Update Password
-          </Button>
-        </Form>
-      </Section>
-
-      <Section>
-        <SectionTitle>
-          <Bell size={20} />
-          Notifications
-        </SectionTitle>
-        <FormGroup>
-          <ToggleWrapper>
-            <Label>Email Notifications</Label>
-            <Toggle
-              active={notifications.email}
-              onClick={() => toggleNotification('email')}
-            />
-          </ToggleWrapper>
-          <ToggleWrapper>
-            <Label>Push Notifications</Label>
-            <Toggle
-              active={notifications.push}
-              onClick={() => toggleNotification('push')}
-            />
-          </ToggleWrapper>
-          <ToggleWrapper>
-            <Label>Newsletter</Label>
-            <Toggle
-              active={notifications.newsletter}
-              onClick={() => toggleNotification('newsletter')}
-            />
-          </ToggleWrapper>
-        </FormGroup>
       </Section>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}

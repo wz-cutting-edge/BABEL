@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { db, storage } from '../../services/firebase/config';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Camera, Book, Video, Heart, AlertTriangle } from 'lucide-react';
 import { Button, Loading, ErrorMessage } from '../../components/common';
@@ -67,21 +67,21 @@ const AvatarUpload = styled.label`
 
 const ProfileInfo = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
 
-  h2 {
-    margin-bottom: 0.5rem;
-    font-size: 1.75rem;
-  }
+const FollowButton = styled(Button)`
+  align-self: flex-start;
+  background: ${props => props.following ? props.theme.secondaryBackground : props.theme.primary};
+  color: ${props => props.following ? props.theme.text : 'white'};
+  border: 1px solid ${props => props.following ? props.theme.border : 'transparent'};
 
-  .email {
-    color: ${props => props.theme.textSecondary};
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  .bio {
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
+  &:hover {
+    background: ${props => props.following ? props.theme.error : props.theme.primaryHover};
+    color: white;
+    border-color: transparent;
   }
 `;
 
@@ -299,6 +299,7 @@ const Profile = () => {
   const [favorites, setFavorites] = useState([]);
   const navigate = useNavigate();
   const [showBanModal, setShowBanModal] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const isOwnProfile = user?.uid === userId;
 
@@ -385,6 +386,17 @@ const Profile = () => {
     }
   }, [user, userId, navigate]);
 
+  useEffect(() => {
+    if (!user || !userId || userId === user.uid) return;
+    
+    const followRef = doc(db, `users/${user.uid}/following/${userId}`);
+    const unsubscribe = onSnapshot(followRef, (doc) => {
+      setIsFollowing(doc.exists());
+    });
+    
+    return () => unsubscribe();
+  }, [user, userId]);
+
   const handleAvatarChange = async (e) => {
     if (!isOwnProfile) return;
     const file = e.target.files[0];
@@ -434,6 +446,31 @@ const Profile = () => {
     }
   };
 
+  const handleFollow = async () => {
+    if (!user || !userId) return;
+    
+    try {
+      const followRef = doc(db, `users/${user.uid}/following/${userId}`);
+      const followedRef = doc(db, `users/${userId}/followers/${user.uid}`);
+      
+      if (isFollowing) {
+        // Unfollow
+        await deleteDoc(followRef);
+        await deleteDoc(followedRef);
+      } else {
+        // Follow
+        await setDoc(followRef, {
+          timestamp: serverTimestamp()
+        });
+        await setDoc(followedRef, {
+          timestamp: serverTimestamp()
+        });
+      }
+    } catch (error) {
+      console.error('Error updating follow status:', error);
+    }
+  };
+
   if (loading) return <Loading />;
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
   if (!profile) return null;
@@ -466,18 +503,27 @@ const Profile = () => {
           <p>{profile.email}</p>
           <p>{profile.bio || 'No bio yet'}</p>
 
+          {user && userId !== user.uid && (
+            <FollowButton 
+              following={isFollowing}
+              onClick={handleFollow}
+            >
+              {isFollowing ? 'Unfollow' : 'Follow'}
+            </FollowButton>
+          )}
+
           <Stats>
             <StatCard>
               <h3>{stats.collections}</h3>
               <p>Collections</p>
             </StatCard>
             <StatCard>
-              <h3>{stats.posts}</h3>
-              <p>Posts</p>
+              <h3>{stats.followers || 0}</h3>
+              <p>Followers</p>
             </StatCard>
             <StatCard>
-              <h3>{stats.favorites}</h3>
-              <p>Favorites</p>
+              <h3>{stats.following || 0}</h3>
+              <p>Following</p>
             </StatCard>
           </Stats>
         </ProfileInfo>

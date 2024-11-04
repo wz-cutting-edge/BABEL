@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun } from 'lucide-react';
-import { auth } from '../../services/firebase/config';
+import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun, Settings } from 'lucide-react';
+import { auth, db } from '../../services/firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
 import {
   HeaderWrapper,
   Container,
@@ -14,20 +15,32 @@ import {
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 import { signOut } from 'firebase/auth';
+import { useAuth } from '../../contexts/AuthContext';
 
-const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
+const SignedHeader = ({ toggleTheme, isDarkMode }) => {
+  const { user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [profileData, setProfileData] = useState(null);
   const scrollDirection = useScrollDirection();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+    const fetchProfileData = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          setProfileData(userDoc.data());
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+
+    fetchProfileData();
+  }, [user]);
 
   const handleProfileClick = () => {
     if (user?.uid) {
@@ -75,18 +88,26 @@ const SignedHeader = ({ toggleTheme, isDarkMode, user }) => {
           <Dropdown>
             <IconButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
               <img 
-                src={user?.photoURL || '/default-avatar.png'} 
+                src={profileData?.photoURL || user?.photoURL || '/default-avatar.png'} 
                 alt="avatar" 
-                style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+                style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%',
+                  objectFit: 'cover'
+                }}
               />
             </IconButton>
             <DropdownContent isOpen={isDropdownOpen}>
               <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)' }}>
-                <div>{user?.displayName || 'User'}</div>
+                <div>{profileData?.displayName || user?.displayName || 'User'}</div>
                 <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{user?.email}</div>
               </div>
               <DropdownItem onClick={handleProfileClick}>
                 <User size={16} /> Profile
+              </DropdownItem>
+              <DropdownItem as={Link} to="/settings">
+                <Settings size={16} /> Settings
               </DropdownItem>
               <DropdownItem as={Link} to="/collections">
                 <BookMarked size={16} /> Collections

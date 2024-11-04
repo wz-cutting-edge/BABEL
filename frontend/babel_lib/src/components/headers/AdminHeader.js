@@ -8,7 +8,10 @@ import {
   Container,
   NavGroup,
   NavLink as StyledNavLink,
-  IconButton
+  IconButton,
+  Dropdown,
+  DropdownContent,
+  DropdownItem
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 import { useAuth } from '../../contexts/AuthContext';
@@ -78,9 +81,30 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
           <IconButton onClick={toggleTheme}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </IconButton>
-          <IconButton onClick={handleLogout}>
-            <LogOut size={20} />
-          </IconButton>
+          <Dropdown>
+            <IconButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+              <img 
+                src={user?.photoURL || '/default-avatar.png'} 
+                alt="avatar" 
+                style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+              />
+            </IconButton>
+            <DropdownContent isOpen={isDropdownOpen}>
+              <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)' }}>
+                <div>{user?.displayName || 'Admin'}</div>
+                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{user?.email}</div>
+              </div>
+              <DropdownItem onClick={() => {
+                navigate(`/profile/${user?.uid}`);
+                setIsDropdownOpen(false);
+              }}>
+                <User size={16} /> Profile
+              </DropdownItem>
+              <DropdownItem onClick={handleLogout}>
+                <LogOut size={16} /> Log out
+              </DropdownItem>
+            </DropdownContent>
+          </Dropdown>
         </NavGroup>
       </Container>
     </HeaderWrapper>
