@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, ChevronDown } from 'lucide-react';
 import { uploadMedia } from '../../services/api/media';
 import { Button, ErrorMessage } from '../../components/common';
 import { useAuth } from '../../contexts/AuthContext';
@@ -169,6 +169,47 @@ const genres = [
   'travel'
 ];
 
+const GenreSection = styled.div`
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
+  background: ${props => props.theme.secondaryBackground};
+  overflow: hidden;
+`;
+
+const GenreHeader = styled.div`
+  padding: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  
+  &:hover {
+    background: ${props => props.theme.background};
+  }
+`;
+
+const GenreList = styled.div`
+  display: ${props => props.isExpanded ? 'grid' : 'none'};
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+  padding: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+const GenreItem = styled.div`
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  background: ${props => props.isSelected ? props.theme.primary + '20' : 'transparent'};
+  color: ${props => props.isSelected ? props.theme.primary : props.theme.text};
+  border: 1px solid ${props => props.isSelected ? props.theme.primary : 'transparent'};
+  
+  &:hover {
+    background: ${props => props.isSelected ? props.theme.primary + '30' : props.theme.background};
+  }
+`;
+
 const MediaUploader = () => {
   const { user, isAdmin } = useAuth();
   
@@ -190,7 +231,7 @@ const MediaUploader = () => {
   const [metadata, setMetadata] = useState({
     title: '',
     type: 'book',
-    genre: '',
+    genres: [],
     description: '',
     author: '',
     year: '',
@@ -200,6 +241,7 @@ const MediaUploader = () => {
   const [error, setError] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
+  const [isGenreExpanded, setIsGenreExpanded] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -283,7 +325,7 @@ const MediaUploader = () => {
       setMetadata({
         title: '',
         type: 'book',
-        genre: '',
+        genres: [],
         description: '',
         author: '',
         year: '',
@@ -384,18 +426,34 @@ const MediaUploader = () => {
           <option value="article">Article</option>
         </Select>
         
-        <Select
-          value={metadata.genre}
-          onChange={e => setMetadata({ ...metadata, genre: e.target.value })}
-          required
-        >
-          <option value="">Select a genre...</option>
-          {genres.map(genre => (
-            <option key={genre} value={genre}>
-              {genre}
-            </option>
-          ))}
-        </Select>
+        <GenreSection>
+          <GenreHeader onClick={() => setIsGenreExpanded(!isGenreExpanded)}>
+            <span>Select Genres ({metadata.genres.length} selected)</span>
+            <ChevronDown 
+              size={20} 
+              style={{ 
+                transform: isGenreExpanded ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.2s'
+              }} 
+            />
+          </GenreHeader>
+          <GenreList isExpanded={isGenreExpanded}>
+            {genres.map(genre => (
+              <GenreItem
+                key={genre}
+                isSelected={metadata.genres.includes(genre)}
+                onClick={() => {
+                  const newGenres = metadata.genres.includes(genre)
+                    ? metadata.genres.filter(g => g !== genre)
+                    : [...metadata.genres, genre];
+                  setMetadata({ ...metadata, genres: newGenres });
+                }}
+              >
+                {genre}
+              </GenreItem>
+            ))}
+          </GenreList>
+        </GenreSection>
         
         <TextArea
           placeholder="Description"
