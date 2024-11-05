@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
-import { BarChart, Users, Flag, MessageSquare, Upload } from 'lucide-react';
+import { BarChart, Flag, MessageSquare, Upload } from 'lucide-react';
+import { db } from '../../services/firebase/config';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const DashboardWrapper = styled.div`
   padding: 6rem 2rem 2rem;
@@ -43,9 +45,9 @@ const MainContent = styled.div`
 
 const DashboardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 `;
 
 const DashboardCard = styled.div`
@@ -53,11 +55,66 @@ const DashboardCard = styled.div`
   padding: 1.5rem;
   border-radius: 8px;
   text-align: center;
+
+  h3 {
+    color: ${props => props.theme.text};
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: ${props => props.theme.primary};
+  }
 `;
 
 const AdminDashboard = () => {
   const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    pendingReports: 0,
+    totalContent: 0,
+    openTickets: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Get pending reports count
+        const reportsQuery = query(
+          collection(db, 'reports'),
+          where('status', '==', 'pending')
+        );
+        const reportsSnapshot = await getDocs(reportsQuery);
+        const pendingReports = reportsSnapshot.size;
+
+        // Get total content count (posts + media)
+        const postsSnapshot = await getDocs(collection(db, 'posts'));
+        const mediaSnapshot = await getDocs(collection(db, 'media'));
+        const totalContent = postsSnapshot.size + mediaSnapshot.size;
+
+        // Get open support tickets count
+        const ticketsQuery = query(
+          collection(db, 'support_tickets'),
+          where('status', '==', 'open')
+        );
+        const ticketsSnapshot = await getDocs(ticketsQuery);
+        const openTickets = ticketsSnapshot.size;
+
+        setStats({
+          pendingReports,
+          totalContent,
+          openTickets
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+
+    if (isAdmin) {
+      fetchStats();
+    }
+  }, [isAdmin]);
 
   if (loading) return <div>Loading...</div>;
   if (!user || !isAdmin) return <Navigate to="/" />;
@@ -90,19 +147,15 @@ const AdminDashboard = () => {
         <DashboardGrid>
           <DashboardCard>
             <h3>Pending Reports</h3>
-            <p>15</p>
-          </DashboardCard>
-          <DashboardCard>
-            <h3>New Users (Today)</h3>
-            <p>42</p>
+            <p>{stats.pendingReports}</p>
           </DashboardCard>
           <DashboardCard>
             <h3>Total Content</h3>
-            <p>10,567</p>
+            <p>{stats.totalContent}</p>
           </DashboardCard>
           <DashboardCard>
-            <h3>Active Users</h3>
-            <p>1,234</p>
+            <h3>Open Support Tickets</h3>
+            <p>{stats.openTickets}</p>
           </DashboardCard>
         </DashboardGrid>
       </MainContent>
