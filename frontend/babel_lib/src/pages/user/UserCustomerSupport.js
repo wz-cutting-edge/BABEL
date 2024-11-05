@@ -251,6 +251,18 @@ const UserCustomerSupport = () => {
     if (!ticketType || !formData.description) return;
 
     try {
+      let initialMessage = '';
+
+      if (ticketType === 'request_media') {
+        initialMessage = `Media Request Details | Title: ${formData.title} | Resource Type: ${formData.resourceType} | Author: ${formData.author} | Year: ${formData.year} | Reason for Request: ${formData.reason} | Description: ${formData.description}`;
+      } else if (ticketType === 'other') {
+        initialMessage = `Issue Type: ${formData.issueType} | Related Content: ${formData.relatedContent} | Description: ${formData.description}`;
+      } else if (ticketType === 'report_bug') {
+        initialMessage = `Bug Report | Issue Type: ${formData.issueType} | Steps to Reproduce: ${formData.description} | Related Content: ${formData.relatedContent}`;
+      } else if (ticketType === 'appeal_ban') {
+        initialMessage = `Ban Appeal | Reason for Appeal: ${formData.reason} | Description: ${formData.description}`;
+      }
+
       const ticketData = {
         userId: user.uid,
         type: ticketType,
@@ -258,31 +270,16 @@ const UserCustomerSupport = () => {
         createdAt: serverTimestamp(),
         lastUpdate: serverTimestamp(),
         messages: [{
-          text: formData.description,
+          text: initialMessage.trim(),
           isAdmin: false,
           timestamp: new Date().toISOString()
-        }]
+        }],
+        formData: formData
       };
 
-      // Add type-specific data
-      if (ticketType === 'request_media') {
-        ticketData.mediaRequest = {
-          title: formData.title,
-          resourceType: formData.resourceType,
-          author: formData.author,
-          year: formData.year,
-          reason: formData.reason,
-          description: formData.description
-        };
-      } else if (ticketType === 'other') {
-        ticketData.otherRequest = {
-          issueType: formData.issueType,
-          description: formData.description,
-          relatedContent: formData.relatedContent
-        };
-      }
-
       await addDoc(collection(db, 'support_tickets'), ticketData);
+      
+      // Reset form
       setFormData({
         title: '',
         resourceType: '',
