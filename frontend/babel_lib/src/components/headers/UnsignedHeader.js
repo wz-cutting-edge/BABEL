@@ -6,7 +6,11 @@ import {
   Container,
   NavGroup,
   NavLink,
-  IconButton
+  IconButton,
+  ThemeToggleButton,
+  LogoLink,
+  NavContainer,
+  RegisterButton
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 
@@ -26,23 +30,23 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
     <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
       <Container>
         <NavGroup className="logo-group">
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <BookOpen size={24} color="#7289DA" />
-            <span style={{ fontWeight: 'bold', color: 'inherit' }}>BABEL</span>
-          </Link>
+          <LogoLink to="/">
+            <BookOpen size={24} />
+            <span>BABEL</span>
+          </LogoLink>
         </NavGroup>
         
         <NavGroup className="nav-links">
-          <nav style={{ display: 'flex', gap: '1.5rem' }}>
+          <NavContainer>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/search">Search</NavLink>
-          </nav>
+          </NavContainer>
         </NavGroup>
         
         <NavGroup className="actions-group">
-          <IconButton onClick={toggleTheme}>
+          <ThemeToggleButton onClick={toggleTheme}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </IconButton>
+          </ThemeToggleButton>
           <IconButton>
             <Search size={20} />
           </IconButton>
@@ -53,18 +57,10 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
             </IconButton>
           </Link>
           <Link to="/register">
-            <IconButton 
-              style={{ 
-                backgroundColor: '#7289DA', 
-                color: 'white', 
-                padding: '0.5rem 1rem', 
-                borderRadius: '4px',
-                transition: 'opacity 0.2s ease'
-              }}
-            >
+            <RegisterButton>
               <UserPlus size={16} />
               <span>Register</span>
-            </IconButton>
+            </RegisterButton>
           </Link>
         </NavGroup>
       </Container>

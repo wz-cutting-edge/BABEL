@@ -9,10 +9,17 @@ import Comments from './Comments';
 import ReportModal from '../modals/ReportModal';
 
 const PostWrapper = styled.div`
-  background-color: ${props => props.theme.secondaryBackground};
-  padding: 1rem;
-  border-radius: 8px;
+  background-color: ${props => props.theme.surfaceColor};
+  border: 1px solid ${props => props.theme.borderLight};
+  padding: 1.5rem;
+  border-radius: 12px;
   margin-bottom: 1rem;
+  box-shadow: ${props => props.theme.shadowSm};
+  transition: all 0.2s ease;
+  
+  * {
+    color: ${props => props.theme.text};
+  }
 `;
 
 const PostHeader = styled.div`
@@ -20,6 +27,21 @@ const PostHeader = styled.div`
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  .username {
+    color: ${props => props.theme.text};
+    font-weight: 600;
+  }
+
+  .timestamp {
+    color: ${props => props.theme.textSecondary};
+    font-size: 0.8rem;
+  }
 `;
 
 const PostAvatar = styled.img`
@@ -40,9 +62,10 @@ const PostImage = styled.img`
 const ActionBar = styled.div`
   display: flex;
   gap: 1rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid ${props => props.theme.border};
-  border-bottom: 1px solid ${props => props.theme.border};
+  padding: 0.75rem 0;
+  border-top: 1px solid ${props => props.theme.borderLight};
+  border-bottom: 1px solid ${props => props.theme.borderLight};
+  margin: 1rem 0;
 `;
 
 const ActionButton = styled.button`
@@ -51,13 +74,15 @@ const ActionButton = styled.button`
   gap: 0.5rem;
   background: none;
   border: none;
-  color: ${props => props.active ? props.theme.primary : props.theme.text};
+  color: ${props => props.active ? props.theme.primary : props.theme.textSecondary};
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.theme.hover};
+    color: ${props => props.active ? props.theme.primaryHover : props.theme.text};
+    background: ${props => props.theme.backgroundAlt};
   }
 `;
 
@@ -81,6 +106,19 @@ const OptionsButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
+  color: ${props => props.theme.textSecondary};
+`;
+
+const PostContent = styled.div`
+  color: ${props => props.theme.text};
+  line-height: 1.5;
+  margin: 1rem 0;
+  white-space: pre-wrap;
+  font-size: 1rem;
+`;
+
+const TimeStamp = styled.div`
+  font-size: 0.8rem;
   color: ${props => props.theme.textSecondary};
 `;
 
@@ -179,22 +217,17 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
   return (
     <PostWrapper ref={ref}>
       <PostHeader>
-        <ProfileLink onClick={() => navigate(`/profile/${postData.userId}`)}>
-          <PostAvatar 
-            src={userData?.photoURL || '/default-avatar.png'} 
-            alt={userData?.username || 'Anonymous'} 
-            onClick={() => navigate(`/profile/${postData.userId}`)}
-            style={{ cursor: 'pointer' }}
-          />
-        </ProfileLink>
-        <div>
-          <strong onClick={() => navigate(`/profile/${postData.userId}`)} style={{ cursor: 'pointer' }}>
-            {userData?.username || 'Anonymous'}
-          </strong>
-          <div style={{ fontSize: '0.8rem', color: props => props.theme.textSecondary }}>
+        <img 
+          src={userData?.photoURL || '/default-avatar.png'} 
+          alt={userData?.username} 
+          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+        />
+        <UserInfo>
+          <span className="username">{userData?.username || 'Anonymous'}</span>
+          <span className="timestamp">
             {new Date(postData.createdAt?.toDate()).toLocaleString()}
-          </div>
-        </div>
+          </span>
+        </UserInfo>
         {isAdmin && (
           <ActionButton onClick={() => onDelete(post.id)} style={{ color: props => props.theme.error }}>
             <Trash2 size={16} />
@@ -213,7 +246,7 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
           />
         </MoreOptions>
       </PostHeader>
-      <p>{postData.content}</p>
+      <PostContent>{postData.content}</PostContent>
       {postData.imageUrl && <PostImage src={postData.imageUrl} alt="Post content" />}
       <ActionBar>
         <ActionButton onClick={handleLike} active={hasLiked}>

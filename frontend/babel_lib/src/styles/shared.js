@@ -3,10 +3,15 @@ import { Link } from 'react-router-dom';
 
 // Layout Components
 export const PageWrapper = styled.div`
-  padding-top: 4rem; // Height of Navigation + some spacing
+  padding-top: 4rem;
   min-height: 100vh;
   width: 100%;
   background: ${props => props.theme.background};
+  background-image: linear-gradient(
+    to bottom,
+    ${props => props.theme.background},
+    ${props => props.theme.backgroundAlt}
+  );
   position: relative;
   z-index: 1;
 `;
@@ -15,13 +20,20 @@ export const ContentContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: ${props => props.theme.secondaryBackground}95;
-  backdrop-filter: blur(8px);
+  background: ${props => props.theme.surfaceColor}95;
+  backdrop-filter: blur(12px);
   border-radius: 16px;
-  border: 1px solid ${props => props.theme.border};
-  box-shadow: 0 4px 6px -1px ${props => props.theme.background}40;
+  border: 1px solid ${props => props.theme.borderLight};
+  box-shadow: ${props => props.theme.shadowMd};
   position: relative;
   z-index: 2;
+  
+  &:hover {
+    box-shadow: ${props => props.theme.shadowLg};
+    transform: translateY(-2px);
+  }
+  
+  transition: all 0.3s ease;
 `;
 
 // Typography

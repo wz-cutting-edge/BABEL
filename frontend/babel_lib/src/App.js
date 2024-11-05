@@ -2,21 +2,28 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider as CustomThemeProvider } from './contexts/ThemeContext';
-import { lightTheme } from './styles/theme';
+import { ThemeProvider as CustomThemeProvider, useTheme } from './contexts/ThemeContext';
 import AppRoutes from './routes/AppRoutes';
-import MainLayout from './layouts/MainLayout';
+import MainLayout from './components/layouts/MainLayout';
+
+const ThemedApp = () => {
+  const { theme } = useTheme();
+  
+  return (
+    <ThemeProvider theme={theme}>
+      <MainLayout>
+        <AppRoutes />
+      </MainLayout>
+    </ThemeProvider>
+  );
+};
 
 const App = () => {
   return (
     <Router>
       <AuthProvider>
         <CustomThemeProvider>
-          <ThemeProvider theme={lightTheme}>
-            <MainLayout>
-              <AppRoutes />
-            </MainLayout>
-          </ThemeProvider>
+          <ThemedApp />
         </CustomThemeProvider>
       </AuthProvider>
     </Router>

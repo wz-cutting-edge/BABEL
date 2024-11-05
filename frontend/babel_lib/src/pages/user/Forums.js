@@ -10,9 +10,14 @@ import { AlertTriangle, Search, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ForumsWrapper = styled.div`
-  padding: 6rem 2rem 2rem;
+  padding: 4rem 2rem 2rem;
   max-width: 800px;
   margin: 0 auto;
+  
+  h2 {
+    color: ${props => props.theme.text};
+    margin-bottom: 2rem;
+  }
 `;
 
 const PostsList = styled.div`
@@ -41,15 +46,21 @@ const SearchContainer = styled.div`
 const SearchInput = styled.input`
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid ${props => props.theme.border};
+  border: 1px solid ${props => props.theme.borderLight};
   border-radius: 8px;
-  background: ${props => props.theme.background};
+  background: ${props => props.theme.surfaceColor};
   color: ${props => props.theme.text};
-  font-size: 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
   }
 `;
 
@@ -66,13 +77,14 @@ const SearchResults = styled.div`
   top: 100%;
   left: 0;
   right: 0;
-  background: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
+  background: ${props => props.theme.surfaceColor};
+  border: 1px solid ${props => props.theme.borderLight};
   border-radius: 8px;
   margin-top: 0.5rem;
   max-height: 300px;
   overflow-y: auto;
   z-index: 1000;
+  box-shadow: ${props => props.theme.shadowMd};
 `;
 
 const UserResult = styled.div`
@@ -81,16 +93,19 @@ const UserResult = styled.div`
   gap: 1rem;
   padding: 0.75rem 1rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.theme.hover};
+    background: ${props => props.theme.backgroundAlt};
   }
 
-  img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
+  strong {
+    color: ${props => props.theme.text};
+  }
+
+  div {
+    color: ${props => props.theme.textSecondary};
+    font-size: 0.875rem;
   }
 `;
 

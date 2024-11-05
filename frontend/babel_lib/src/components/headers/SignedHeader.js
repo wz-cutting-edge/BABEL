@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun, Settings, HelpCircle } from 'lucide-react';
+import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun, Settings, HelpCircle, LogIn, UserPlus } from 'lucide-react';
 import { auth, db } from '../../services/firebase/config';
 import { doc, getDoc, onSnapshot, query, collection, where } from 'firebase/firestore';
 import {
@@ -11,11 +11,17 @@ import {
   IconButton,
   Dropdown,
   DropdownContent,
-  DropdownItem
+  DropdownItem,
+  NotificationDot,
+  DropdownHeader,
+  LogoLink,
+  NavContainer,
+  RegisterButton
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '../../contexts/AuthContext';
+import { ThemeToggleButton } from './styles';
 
 const SignedHeader = ({ toggleTheme, isDarkMode }) => {
   const { user } = useAuth();
@@ -84,19 +90,11 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
       <IconButton onClick={() => navigate('/support')}>
         <HelpCircle size={20} />
         {hasUnreadTickets && (
-          <span style={{ 
-            position: 'absolute', 
-            top: '-5px', 
-            right: '-5px', 
-            background: '#EF4444', 
-            borderRadius: '50%', 
-            width: '10px', 
-            height: '10px' 
-          }} />
+          <NotificationDot />
         )}
       </IconButton>
       <DropdownContent>
-        <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ padding: '0.5rem 1rem', borderBottom: `1px solid ${props => props.theme.border}` }}>
           <div>Support</div>
         </div>
         {supportTickets.length > 0 ? (
@@ -145,25 +143,25 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
     <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
       <Container>
         <NavGroup className="logo-group">
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <BookOpen size={24} color="#7289DA" />
-            <span style={{ fontWeight: 'bold' }}>BABEL</span>
-          </Link>
+          <LogoLink to="/">
+            <BookOpen size={24} />
+            <span>BABEL</span>
+          </LogoLink>
         </NavGroup>
         
         <NavGroup className="nav-links">
-          <nav style={{ display: 'flex', gap: '1.5rem' }}>
+          <NavContainer>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/search">Search</NavLink>
             <NavLink to="/collections">Collections</NavLink>
             <NavLink to="/forums">Forums</NavLink>
-          </nav>
+          </NavContainer>
         </NavGroup>
         
         <NavGroup className="actions-group">
-          <IconButton onClick={toggleTheme}>
+          <ThemeToggleButton onClick={toggleTheme}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </IconButton>
+          </ThemeToggleButton>
           <IconButton>
             <Search size={20} />
           </IconButton>
@@ -182,21 +180,15 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
               />
             </IconButton>
             <DropdownContent isOpen={isDropdownOpen}>
-              <div style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)' }}>
+              <DropdownHeader>
                 <div>{profileData?.displayName || user?.displayName || 'User'}</div>
-                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{user?.email}</div>
-              </div>
+                <div>{user?.email}</div>
+              </DropdownHeader>
               <DropdownItem onClick={handleProfileClick}>
                 <User size={16} /> Profile
               </DropdownItem>
               <DropdownItem as={Link} to="/settings">
                 <Settings size={16} /> Settings
-              </DropdownItem>
-              <DropdownItem as={Link} to="/collections">
-                <BookMarked size={16} /> Collections
-              </DropdownItem>
-              <DropdownItem as={Link} to="/forums">
-                <MessageSquare size={16} /> Forums
               </DropdownItem>
               <DropdownItem onClick={handleLogout}>
                 <LogOut size={16} /> Log out
