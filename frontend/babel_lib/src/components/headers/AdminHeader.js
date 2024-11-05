@@ -15,6 +15,8 @@ import {
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 import { useAuth } from '../../contexts/AuthContext';
+import { db } from '../../services/firebase/config';
+import { doc, getDoc, onSnapshot, query, collection, where } from 'firebase/firestore';
 
 const AdminHeader = ({ toggleTheme, isDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -22,6 +24,7 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
   const scrollDirection = useScrollDirection();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +33,18 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    
+    const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (doc) => {
+      if (doc.exists()) {
+        setProfileData(doc.data());
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -84,9 +99,14 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
           <Dropdown>
             <IconButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
               <img 
-                src={user?.photoURL || '/default-avatar.png'} 
+                src={profileData?.photoURL || user?.photoURL || '/default-avatar.png'} 
                 alt="avatar" 
-                style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+                style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%',
+                  objectFit: 'cover'
+                }}
               />
             </IconButton>
             <DropdownContent isOpen={isDropdownOpen}>

@@ -28,20 +28,15 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
   const [hasUnreadTickets, setHasUnreadTickets] = useState(false);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      if (!user?.uid) return;
-      
-      try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          setProfileData(userDoc.data());
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
+    if (!user?.uid) return;
+    
+    const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (doc) => {
+      if (doc.exists()) {
+        setProfileData(doc.data());
       }
-    };
+    });
 
-    fetchProfileData();
+    return () => unsubscribe();
   }, [user]);
 
   useEffect(() => {
