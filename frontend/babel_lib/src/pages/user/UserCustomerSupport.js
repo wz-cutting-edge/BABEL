@@ -325,7 +325,8 @@ const UserCustomerSupport = () => {
                 </div>
                 <div style={{ 
                   fontSize: '0.875rem', 
-                  color: ticket.status === 'resolved' ? '#10B981' : '#F59E0B'
+                  color: ticket.status === 'resolved' ? '#10B981' : 
+                         ticket.status === 'closed' ? '#DC2626' : '#F59E0B'
                 }}>
                   Status: {ticket.status}
                 </div>

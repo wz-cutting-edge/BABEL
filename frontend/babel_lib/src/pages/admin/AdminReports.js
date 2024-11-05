@@ -121,9 +121,12 @@ const AdminReports = () => {
       // Delete the reported content
       await deleteDoc(doc(db, report.contentType + 's', report.contentId));
       
-      // Update report status
-      await updateDoc(doc(db, 'reports', report.id), {
-        status: 'resolved'
+      // Update local state to remove the deleted report
+      setReports(prevReports => prevReports.filter(r => r.contentId !== report.contentId));
+      setReportedContent(prevContent => {
+        const newContent = { ...prevContent };
+        delete newContent[report.contentId];
+        return newContent;
       });
 
       // Create notification for the content owner
