@@ -178,6 +178,49 @@ const MediaMeta = styled.div`
   font-size: 0.9rem;
 `;
 
+const EnterButton = styled(ActionButton)`
+  margin-left: auto;
+  background: ${props => props.theme.primary};
+  color: white;
+  
+  &:hover {
+    background: ${props => props.theme.primaryHover};
+  }
+`;
+
+const genres = [
+  'fiction',
+  'non-fiction',
+  'Action/Adventure',
+  'fantasy',
+  'graphic novel',
+  'horror',
+  'mystery',
+  'romance',
+  'supernatural',
+  'comedy',
+  'sci-fi',
+  'thriller/suspense',
+  'drama',
+  'children',
+  'young adult',
+  'adult',
+  'art/photography',
+  'biography',
+  'culinary/food',
+  'poetry',
+  'history',
+  'math',
+  'language',
+  'science',
+  'social science',
+  'essay',
+  'how-to/guide',
+  'informative',
+  'technology',
+  'travel'
+];
+
 const Search = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -194,24 +237,26 @@ const Search = () => {
   const { user } = useAuth();
 
   const searchHandler = useCallback(async (searchTerm) => {
-    if (!searchTerm) {
-      setResults([]);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
       const searchResults = await searchMedia(searchTerm, filters.type);
-      setResults(searchResults);
+      const filteredResults = filters.genre === 'all' 
+        ? searchResults
+        : searchResults.filter(item => 
+            Array.isArray(item.genres) 
+              ? item.genres.includes(filters.genre)
+              : item.genre === filters.genre
+          );
+      setResults(filteredResults);
     } catch (err) {
       setError('Failed to fetch search results');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [filters.type]);
+  }, [filters.type, filters.genre]);
 
   const debouncedSearch = useDebounce(searchHandler, 500);
 
@@ -279,6 +324,20 @@ const Search = () => {
             <option value="video">Videos</option>
             <option value="article">Articles</option>
           </StyledSelect>
+          <StyledSelect
+            value={filters.genre}
+            onChange={(e) => setFilters({ ...filters, genre: e.target.value })}
+          >
+            <option value="all">All Genres</option>
+            {genres.map(genre => (
+              <option key={genre} value={genre}>
+                {genre}
+              </option>
+            ))}
+          </StyledSelect>
+          <EnterButton onClick={() => searchHandler('')}>
+            Enter
+          </EnterButton>
         </SearchForm>
       </SearchHeader>
 

@@ -87,7 +87,7 @@ const OptionsButton = styled.button`
 const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
   const [postData, setPostData] = useState({
     ...post,
-    commentCount: post.commentCount || 0
+    commentCount: post?.commentCount || 0
   });
   const [showComments, setShowComments] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
@@ -143,13 +143,15 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
     const postRef = doc(db, 'posts', post.id);
     
     try {
+      // Optimistically update UI
+      setHasLiked(prev => !prev);
+      
       if (hasLiked) {
         // Remove like
         await deleteDoc(likeRef);
         await updateDoc(postRef, {
           likes: increment(-1)
         });
-        setHasLiked(false);
       } else {
         // Add like
         await setDoc(likeRef, {
@@ -160,9 +162,10 @@ const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
         await updateDoc(postRef, {
           likes: increment(1)
         });
-        setHasLiked(true);
       }
     } catch (error) {
+      // Revert optimistic update on error
+      setHasLiked(prev => !prev);
       console.error('Error updating like:', error);
     }
   };

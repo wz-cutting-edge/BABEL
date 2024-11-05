@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { collection, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '../../../services/firebase/config';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CarouselWrapper = styled.div`
   position: relative;
@@ -75,61 +74,57 @@ const CarouselButton = styled.button`
   }
 `;
 
-const BookCarousel = () => {
-  const [books, setBooks] = useState([]);
+const BookCarousel = ({ books = [], type = 'book' }) => {
   const [offset, setOffset] = useState(0);
-  
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const booksRef = collection(db, 'media');
-        const q = query(
-          booksRef, 
-          where('type', '==', 'book'),
-          where('status', '==', 'active'),
-          orderBy('createdAt', 'desc'),
-          limit(10)
-        );
-        const snapshot = await getDocs(q);
-        const booksData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setBooks(booksData);
-      } catch (error) {
-        console.error('Error fetching books:', error);
-      }
-    };
+  const navigate = useNavigate();
 
-    fetchBooks();
-  }, []);
+  if (!Array.isArray(books)) {
+    console.warn('BookCarousel: books prop is not an array');
+    return null;
+  }
+
+  if (books.length === 0) {
+    return (
+      <CarouselWrapper>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          No {type}s available
+        </div>
+      </CarouselWrapper>
+    );
+  }
 
   const handlePrevious = () => {
-    setOffset(prev => Math.min(prev + 300, 0));
+    setOffset(Math.min(offset + 300, 0));
   };
 
   const handleNext = () => {
-    setOffset(prev => Math.max(prev - 300, -(books.length - 1) * 300));
+    const maxOffset = -(books.length * 300 - 300);
+    setOffset(Math.max(offset - 300, maxOffset));
   };
 
   return (
     <CarouselWrapper>
-      <CarouselButton style={{ left: '1rem' }} onClick={handlePrevious}>
-        <ChevronLeft size={24} />
-      </CarouselButton>
-      
+      {offset < 0 && (
+        <CarouselButton style={{ left: '1rem' }} onClick={handlePrevious}>
+          <ChevronLeft />
+        </CarouselButton>
+      )}
       <CarouselTrack offset={offset}>
         {books.map(book => (
-          <CarouselItem key={book.id}>
-            <img src={book.coverUrl || '/default-book-cover.jpg'} alt={book.title} />
+          <CarouselItem 
+            key={book.id}
+            onClick={() => navigate(`/media/${book.id}`)}
+          >
+            <img src={book.coverUrl || '/placeholder.jpg'} alt={book.title} />
             <BookTitle>{book.title}</BookTitle>
           </CarouselItem>
         ))}
       </CarouselTrack>
-      
-      <CarouselButton style={{ right: '1rem' }} onClick={handleNext}>
-        <ChevronRight size={24} />
-      </CarouselButton>
+      {offset > -(books.length * 300 - 300) && (
+        <CarouselButton style={{ right: '1rem' }} onClick={handleNext}>
+          <ChevronRight />
+        </CarouselButton>
+      )}
     </CarouselWrapper>
   );
 };

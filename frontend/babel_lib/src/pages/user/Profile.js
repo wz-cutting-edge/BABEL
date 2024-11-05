@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { db, storage } from '../../services/firebase/config';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, onSnapshot, deleteDoc, setDoc, serverTimestamp, increment, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Camera, Book, Video, Heart, AlertTriangle } from 'lucide-react';
+import { Camera, Book, Video, Heart, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button, Loading, ErrorMessage } from '../../components/common';
 import Post from '../../components/posts/Post';
 
@@ -178,23 +178,37 @@ const MediaGrid = styled.div`
 `;
 
 const MediaCard = styled.div`
+  position: relative;
   background: ${props => props.theme.secondaryBackground};
-  padding: 1rem;
   border-radius: 8px;
+  overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s;
 
   &:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
   }
+`;
 
-  h3 {
-    margin-bottom: 0.5rem;
-  }
+const RemoveButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: ${props => props.theme.error}CC;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  z-index: 1;
 
-  p {
-    color: ${props => props.theme.textSecondary};
-    font-size: 0.875rem;
+  &:hover {
+    background: ${props => props.theme.error};
   }
 `;
 
@@ -507,6 +521,33 @@ const Profile = () => {
     }
   };
 
+  const handleRemoveFavorite = async (e, favoriteId) => {
+    e.stopPropagation();
+    
+    if (!user || !isOwnProfile) return;
+
+    try {
+      const batch = writeBatch(db);
+      
+      // Remove from user's favorites
+      const favoriteRef = doc(db, `users/${user.uid}/favorites/${favoriteId}`);
+      batch.delete(favoriteRef);
+      
+      // Update media's favorite count
+      const mediaRef = doc(db, 'media', favoriteId);
+      batch.update(mediaRef, {
+        favorites: increment(-1)
+      });
+
+      await batch.commit();
+      
+      // Update local state
+      setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
+  };
+
   if (loading) return <Loading />;
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
   if (!profile) return null;
@@ -620,6 +661,11 @@ const Profile = () => {
                 key={favorite.id}
                 onClick={() => navigate(`/media/${favorite.id}`)}
               >
+                {user && userId === user.uid && (
+                  <RemoveButton onClick={(e) => handleRemoveFavorite(e, favorite.id)}>
+                    <Trash2 size={16} />
+                  </RemoveButton>
+                )}
                 <MediaThumbnail image={favorite.thumbnail}>
                   {favorite.type === 'book' ? <Book size={24} /> : <Video size={24} />}
                 </MediaThumbnail>

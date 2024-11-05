@@ -143,17 +143,12 @@ const Comments = ({ postId, isAdmin }) => {
     if (!newComment.trim() || !user) return;
 
     try {
-      // Get the current post data
+      const batch = writeBatch(db);
       const postRef = doc(db, 'posts', postId);
-      const postSnap = await getDoc(postRef);
+      const commentRef = doc(collection(db, 'comments'));
       
-      if (!postSnap.exists()) {
-        console.error('Post not found');
-        return;
-      }
-
       // Add the comment
-      await addDoc(collection(db, 'comments'), {
+      batch.set(commentRef, {
         postId,
         userId: user.uid,
         content: newComment.trim(),
@@ -161,12 +156,11 @@ const Comments = ({ postId, isAdmin }) => {
       });
 
       // Update the post's comment count
-      const currentCount = postSnap.data().commentCount || 0;
-      await updateDoc(postRef, {
-        commentCount: currentCount + 1
+      batch.update(postRef, {
+        commentCount: increment(1)
       });
 
-      // Clear the input field
+      await batch.commit();
       setNewComment('');
     } catch (error) {
       console.error('Error adding comment:', error);

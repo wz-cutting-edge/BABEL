@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { BookOpen, Search, LogIn, UserPlus, Book, Video } from 'lucide-react';
@@ -15,6 +15,15 @@ import { useAuth } from '../contexts/AuthContext';
 import BookCarousel from '../components/features/books/BookCarousel';
 import { searchMedia } from '../services/api/search';
 import { useDebounce } from '../hooks/useDebounce';
+import { 
+  collection, 
+  getDocs, 
+  query, 
+  where, 
+  orderBy, 
+  limit 
+} from 'firebase/firestore';
+import { db } from '../services/firebase/config';
 
 const MainSection = styled.section`
   flex: 1;
@@ -127,11 +136,35 @@ const ResultMeta = styled.p`
 `;
 
 const Home = () => {
+  const [books, setBooks] = useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchFeaturedBooks = async () => {
+      try {
+        const mediaRef = collection(db, 'media');
+        const q = query(
+          mediaRef,
+          where('type', '==', 'book'),
+          orderBy('createdAt', 'desc'),
+          limit(10)
+        );
+        const snapshot = await getDocs(q);
+        setBooks(snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })));
+      } catch (error) {
+        console.error('Error fetching featured books:', error);
+      }
+    };
+
+    fetchFeaturedBooks();
+  }, []);
 
   const searchHandler = useCallback(async (term) => {
     if (!term) {
@@ -176,7 +209,7 @@ const Home = () => {
               BABEL is a digital library archive and social platform for books, textbooks,
               movies, videos, and more. Join our community to discover, share, and discuss your favorite content.
             </Description>
-            {!user && <BookCarousel />}
+            {!user && <BookCarousel books={books} />}
             <SearchForm onSubmit={(e) => e.preventDefault()}>
               <SearchInput 
                 placeholder="Search for content..." 

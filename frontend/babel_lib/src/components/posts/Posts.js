@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useInfiniteScroll } from '../../hooks/ui/useInfiniteScroll';
 import { useFirebase } from '../../hooks/data/useFirebase';
-import { collection, query, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, startAfter, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebase/config';
 import Post from './Post';
 import { Loading, ErrorMessage } from '../common/common';
@@ -39,12 +39,18 @@ const Posts = () => {
     );
     
     const snapshot = await getDocs(q);
-    const initialPosts = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const postsWithUserData = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const postData = { id: doc.id, ...doc.data() };
+        const userDoc = await getDoc(doc(db, 'users', postData.userId));
+        return {
+          ...postData,
+          userData: userDoc.data()
+        };
+      })
+    );
     
-    setPosts(initialPosts);
+    setPosts(postsWithUserData);
     setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
   }, []);
 
@@ -94,6 +100,7 @@ const Posts = () => {
           ref={index === posts.length - 1 ? lastElementRef : null}
           key={post.id}
           post={post}
+          userData={post.userData}
         />
       ))}
       {loading && <LoadingSpinner />}
