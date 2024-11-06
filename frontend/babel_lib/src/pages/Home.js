@@ -93,14 +93,15 @@ const SearchResults = styled.div`
   top: 100%;
   left: 0;
   right: 0;
-  background: ${props => props.theme.secondaryBackground};
+  background: ${props => props.theme.surfaceColor};
   border-radius: 8px;
   max-height: 400px;
   overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: ${props => props.theme.shadowMd};
   z-index: 10;
   margin-top: 0.5rem;
   display: ${props => props.show ? 'block' : 'none'};
+  border: 1px solid ${props => props.theme.borderLight};
 `;
 
 const ResultItem = styled.div`

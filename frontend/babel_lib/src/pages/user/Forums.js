@@ -41,6 +41,7 @@ const AdminBanner = styled.div`
 const SearchContainer = styled.div`
   margin: 1rem 0;
   position: relative;
+  max-width: 400px;
 `;
 
 const SearchInput = styled.input`

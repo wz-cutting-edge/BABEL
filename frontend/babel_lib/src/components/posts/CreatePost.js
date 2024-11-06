@@ -7,11 +7,32 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Image, X } from 'lucide-react';
 import { ErrorMessage } from '../common/common';
 
+const ForumsWrapper = styled.div`
+  padding: 4rem 1.5rem 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  
+  h2 {
+    color: ${props => props.theme.text};
+    margin-bottom: 2rem;
+  }
+`;
+
 const CreatePostWrapper = styled.div`
-  background: ${props => props.theme.secondaryBackground};
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  background: ${props => props.theme.surfaceColor};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 0 auto 1.5rem;
+  box-shadow: ${props => props.theme.shadowMd};
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:hover {
+    box-shadow: ${props => props.theme.shadowLg};
+    transform: translateY(-2px);
+  }
 `;
 
 const PostForm = styled.form`
@@ -23,12 +44,25 @@ const PostForm = styled.form`
 const TextArea = styled.textarea`
   width: 100%;
   min-height: 100px;
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  resize: vertical;
+  padding: 1rem;
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  font-size: 0.875rem;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
+  }
 `;
 
 const ImagePreview = styled.div`
@@ -57,23 +91,41 @@ const ActionBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.75rem;
+  border-top: 1px solid ${props => props.theme.borderLight};
+  margin-top: 0.5rem;
+
+  label {
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    color: ${props => props.theme.textSecondary};
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: ${props => props.theme.backgroundAlt};
+      color: ${props => props.theme.primary};
+    }
+  }
 `;
 
 const SubmitButton = styled.button`
+  padding: 0.5rem 1rem;
   background: ${props => props.theme.primary};
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 0.875rem;
   cursor: pointer;
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  &:hover:not(:disabled) {
+  transition: all 0.2s ease;
+
+  &:hover {
     background: ${props => props.theme.primaryHover};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 
@@ -155,7 +207,7 @@ const CreatePost = () => {
         <TextArea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="What's on your mind?"
+          placeholder="Share your thoughts with the community..."
         />
         {previewUrl && (
           <ImagePreview>

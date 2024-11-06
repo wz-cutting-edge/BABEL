@@ -19,9 +19,23 @@ const CommentForm = styled.form`
 
 const CommentInput = styled.input`
   flex: 1;
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  background: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
+  }
 `;
 
 const CommentItem = styled.div`
@@ -73,6 +87,26 @@ const OptionsButton = styled.button`
   border: none;
   cursor: pointer;
   color: ${props => props.theme.textSecondary};
+`;
+
+const CommentButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: ${props => props.theme.primary};
+  color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.theme.primaryHover};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const Comments = ({ postId, isAdmin }) => {
@@ -206,7 +240,9 @@ const Comments = ({ postId, isAdmin }) => {
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
           />
-          <button type="submit">Post</button>
+          <CommentButton type="submit" disabled={!newComment.trim()}>
+            Post
+          </CommentButton>
         </CommentForm>
       ) : isBanned ? (
         <div style={{ color: 'red', marginBottom: '1rem' }}>
