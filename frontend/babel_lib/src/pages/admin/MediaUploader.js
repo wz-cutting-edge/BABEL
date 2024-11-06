@@ -10,66 +10,129 @@ import { doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes } from 'firebase/storage';
 
 const UploaderWrapper = styled.div`
-  padding: 6rem 2rem 2rem;
+  padding: 4rem 2rem;
   max-width: 800px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 2rem;
 
   h2 {
-    margin-bottom: 2rem;
+    color: ${props => props.theme.text};
+    font-size: 2rem;
     text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    color: ${props => props.theme.text};
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
   }
 `;
 
 const DropZone = styled.div`
   border: 2px dashed ${props => props.theme.border};
-  border-radius: 8px;
-  padding: 2rem;
+  border-radius: 12px;
+  padding: 3rem 2rem;
   text-align: center;
   cursor: pointer;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   width: 100%;
-  max-width: 600px;
+  background: ${props => props.theme.secondaryBackground};
+  transition: all 0.2s ease;
   
   &:hover {
     border-color: ${props => props.theme.primary};
+    background: ${props => props.theme.background};
+  }
+
+  p {
+    color: ${props => props.theme.text};
+    margin: 1rem 0;
+  }
+
+  small {
+    color: ${props => props.theme.textSecondary};
+    display: block;
+    margin-top: 0.5rem;
+  }
+
+  svg {
+    color: ${props => props.theme.primary};
+    margin-bottom: 1rem;
   }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
-  max-width: 600px;
+  background: ${props => props.theme.surfaceColor};
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid ${props => props.theme.borderLight};
+  box-shadow: ${props => props.theme.shadowMd};
 `;
 
 const Input = styled.input`
-  padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  background: ${props => props.theme.secondaryBackground};
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
+  }
 `;
 
 const Select = styled.select`
-  padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  background: ${props => props.theme.secondaryBackground};
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
+  }
 `;
 
 const TextArea = styled.textarea`
-  padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  background: ${props => props.theme.secondaryBackground};
+  padding: 0.875rem 1rem;
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  background: ${props => props.theme.background};
   color: ${props => props.theme.text};
-  min-height: 100px;
+  font-size: 0.875rem;
+  min-height: 120px;
   resize: vertical;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
+  }
 `;
 
 const Preview = styled.div`
@@ -170,21 +233,23 @@ const genres = [
 ];
 
 const GenreSection = styled.div`
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  background: ${props => props.theme.secondaryBackground};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  background: ${props => props.theme.background};
   overflow: hidden;
 `;
 
 const GenreHeader = styled.div`
-  padding: 0.75rem;
+  padding: 0.875rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
   
   &:hover {
-    background: ${props => props.theme.background};
+    background: ${props => props.theme.backgroundAlt};
   }
 `;
 

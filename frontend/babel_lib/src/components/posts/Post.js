@@ -122,16 +122,31 @@ const TimeStamp = styled.div`
   color: ${props => props.theme.textSecondary};
 `;
 
-const Post = React.forwardRef(({ post, userData, isAdmin, onDelete }, ref) => {
-  const [postData, setPostData] = useState({
-    ...post,
-    commentCount: post?.commentCount || 0
-  });
-  const [showComments, setShowComments] = useState(false);
+const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => {
+  const [postData, setPostData] = useState(post);
+  const [userData, setUserData] = useState(authorData || null);
   const [hasLiked, setHasLiked] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showReportModal, setShowReportModal] = useState(false);
+
+  useEffect(() => {
+    if (!authorData && postData.userId) {
+      // Only fetch user data if not provided through props
+      const fetchUserData = async () => {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', postData.userId));
+          if (userDoc.exists()) {
+            setUserData(userDoc.data());
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      };
+      fetchUserData();
+    }
+  }, [postData.userId, authorData]);
 
   // Listen to post updates
   useEffect(() => {

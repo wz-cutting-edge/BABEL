@@ -17,47 +17,55 @@ const ProfileWrapper = styled.div`
 
 const ProfileHeader = styled.div`
   display: flex;
-  gap: 2rem;
+  gap: 2.5rem;
   margin-bottom: 2rem;
-  padding: 2rem;
-  background: ${props => props.theme.secondaryBackground};
-  border-radius: 8px;
+  padding: 2.5rem;
+  background: ${props => props.theme.surfaceColor};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 12px;
+  box-shadow: ${props => props.theme.shadowMd};
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: 2rem;
   }
 `;
 
 const AvatarSection = styled.div`
   position: relative;
+  flex-shrink: 0;
 `;
 
 const Avatar = styled.img`
-  width: 150px;
-  height: 150px;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
   object-fit: cover;
+  border: 4px solid ${props => props.theme.background};
+  box-shadow: ${props => props.theme.shadowLg};
 `;
 
 const AvatarUpload = styled.label`
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 4px;
+  right: 4px;
   background: ${props => props.theme.primary};
   color: white;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: ${props => props.theme.shadowMd};
 
   &:hover {
     background: ${props => props.theme.primaryHover};
+    transform: scale(1.05);
   }
 
   input {
@@ -87,38 +95,53 @@ const FollowButton = styled(Button)`
 
 const Stats = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
 `;
 
 const StatCard = styled.div`
   background: ${props => props.theme.background};
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 1.25rem;
+  border-radius: 12px;
   text-align: center;
+  border: 1px solid ${props => props.theme.borderLight};
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadowMd};
+  }
 
   h3 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     color: ${props => props.theme.primary};
     margin-bottom: 0.5rem;
+    font-weight: 600;
   }
 
   p {
     color: ${props => props.theme.textSecondary};
     font-size: 0.875rem;
+    font-weight: 500;
   }
 `;
 
 const TabsContainer = styled.div`
   margin-bottom: 2rem;
+  background: ${props => props.theme.surfaceColor};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: ${props => props.theme.shadowSm};
 `;
 
 const TabList = styled.div`
   display: flex;
   gap: 1rem;
-  border-bottom: 1px solid ${props => props.theme.border};
-  margin-bottom: 1rem;
+  border-bottom: 1px solid ${props => props.theme.borderLight};
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
 `;
 
 const Tab = styled.button`
@@ -129,9 +152,18 @@ const Tab = styled.button`
   border-bottom: 2px solid ${props => props.active ? props.theme.primary : 'transparent'};
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
 
   &:hover {
     color: ${props => props.theme.primary};
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
   }
 `;
 
@@ -648,7 +680,11 @@ const Profile = () => {
         {activeTab === 'posts' && (
           <PostsContainer>
             {posts.map(post => (
-              <Post key={post.id} post={post} />
+              <Post 
+                key={post.id} 
+                post={post} 
+                authorData={profile}
+              />
             ))}
             {posts.length === 0 && <p>No posts yet</p>}
           </PostsContainer>
