@@ -72,32 +72,33 @@ export const DropdownContent = styled.div`
   right: 0;
   margin-top: 0.5rem;
   background: ${props => props.theme.surfaceColor};
-  border: 1px solid ${props => props.theme.border};
+  border: 1px solid ${props => props.theme.borderLight};
   border-radius: 8px;
-  box-shadow: ${props => props.theme.shadowMd};
   min-width: 200px;
-  opacity: ${props => props.isOpen ? 1 : 0};
-  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
-  transform: ${props => props.isOpen ? 'translateY(0)' : 'translateY(-10px)'};
-  transition: all 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-  color: ${props => props.theme.text};
+  box-shadow: ${props => props.theme.shadowMd};
+  opacity: ${props => (props.isOpen ? 1 : 0)};
+  visibility: ${props => (props.isOpen ? 'visible' : 'hidden')};
+  transform: ${props => (props.isOpen ? 'translateY(0)' : 'translateY(-10px)')};
+  transition: all 0.2s ease;
+  overflow: hidden;
 `;
 
-export const DropdownItem = styled.button`
-  width: 100%;
-  padding: 0.5rem 1rem;
+export const DropdownItem = styled.div`
+  padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: none;
-  background: none;
-  color: ${props => props.theme.text};
   cursor: pointer;
-  text-align: left;
-  transition: all 0.2s ease;
+  color: ${props => props.theme.text};
+  transition: background-color 0.2s ease;
+  text-decoration: none;
 
   &:hover {
     background: ${props => props.theme.backgroundAlt};
+  }
+
+  svg {
+    color: ${props => props.theme.textSecondary};
   }
 `;
 

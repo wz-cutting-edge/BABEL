@@ -133,7 +133,7 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
               }}>
                 <User size={16} /> Profile
               </DropdownItem>
-              <DropdownItem as={Link} to="/settings">
+              <DropdownItem as={Link} to="/settings" style={{ textDecoration: 'none' }}>
                 <Settings size={16} /> Settings
               </DropdownItem>
               <DropdownItem onClick={handleLogout}>

@@ -8,62 +8,83 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const DashboardWrapper = styled.div`
   padding: 6rem 2rem 2rem;
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
-const Sidebar = styled.div`
-  background: ${props => props.theme.secondaryBackground};
-  padding: 1.5rem;
-  border-radius: 8px;
-  height: fit-content;
-`;
-
-const NavButton = styled.button`
-  width: 100%;
-  padding: 1rem;
-  margin-bottom: 0.5rem;
-  background: ${props => props.active ? props.theme.primary : 'transparent'};
-  color: ${props => props.active ? 'white' : props.theme.text};
-  border: none;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${props => props.active ? props.theme.primary : props.theme.background};
+const Header = styled.div`
+  margin-bottom: 2rem;
+  
+  h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: ${props => props.theme.text};
+    margin-bottom: 1rem;
   }
 `;
 
-const MainContent = styled.div`
-  flex: 1;
+const NavGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const NavCard = styled.button`
+  background: ${props => props.active ? props.theme.primary : props.theme.surfaceColor};
+  color: ${props => props.active ? 'white' : props.theme.text};
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid ${props => props.active ? 'transparent' : props.theme.borderLight};
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: ${props => props.theme.shadowSm};
+  width: 100%;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadowMd};
+    background: ${props => props.active ? props.theme.primary : props.theme.backgroundAlt};
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
 const DashboardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
-  margin-top: 1.5rem;
 `;
 
 const DashboardCard = styled.div`
-  background-color: ${props => props.theme.secondaryBackground};
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
+  background: ${props => props.theme.surfaceColor};
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid ${props => props.theme.borderLight};
+  box-shadow: ${props => props.theme.shadowSm};
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadowMd};
+  }
 
   h3 {
-    color: ${props => props.theme.text};
+    color: ${props => props.theme.textSecondary};
+    font-size: 1rem;
+    font-weight: 500;
     margin-bottom: 1rem;
   }
 
   p {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 2.5rem;
+    font-weight: 600;
     color: ${props => props.theme.primary};
   }
 `;
@@ -129,36 +150,36 @@ const AdminDashboard = () => {
 
   return (
     <DashboardWrapper>
-      <Sidebar>
-        {navItems.map(item => (
-          <NavButton
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            active={window.location.pathname === item.path}
-          >
-            {item.icon}
-            {item.label}
-          </NavButton>
-        ))}
-      </Sidebar>
-
-      <MainContent>
+      <Header>
         <h2>Admin Dashboard</h2>
-        <DashboardGrid>
-          <DashboardCard>
-            <h3>Pending Reports</h3>
-            <p>{stats.pendingReports}</p>
-          </DashboardCard>
-          <DashboardCard>
-            <h3>Total Content</h3>
-            <p>{stats.totalContent}</p>
-          </DashboardCard>
-          <DashboardCard>
-            <h3>Open Support Tickets</h3>
-            <p>{stats.openTickets}</p>
-          </DashboardCard>
-        </DashboardGrid>
-      </MainContent>
+        <NavGrid>
+          {navItems.map(item => (
+            <NavCard
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              active={window.location.pathname === item.path}
+            >
+              {item.icon}
+              {item.label}
+            </NavCard>
+          ))}
+        </NavGrid>
+      </Header>
+
+      <DashboardGrid>
+        <DashboardCard>
+          <h3>Pending Reports</h3>
+          <p>{stats.pendingReports}</p>
+        </DashboardCard>
+        <DashboardCard>
+          <h3>Total Content</h3>
+          <p>{stats.totalContent}</p>
+        </DashboardCard>
+        <DashboardCard>
+          <h3>Open Support Tickets</h3>
+          <p>{stats.openTickets}</p>
+        </DashboardCard>
+      </DashboardGrid>
     </DashboardWrapper>
   );
 };
