@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions remain the same
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isNotBanned() {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return user == null || 
+             !('banned' in user) ||
+             !user.banned ||
+             (user.banEndDate != 'permanent' && 
+              user.banEndDate != null && 
+              request.time > user.banEndDate);
+    }
+
+    // Users collection and subcollections
+    match /users/{userId} {
+      allow read: if true;
+      // Modified to allow updating follower/following counts without restrictions
+      allow update: if isAuthenticated() && (
+        isOwner(userId) || 
+        isAdmin() || 
+        ('followers' in request.resource.data) ||
+        ('following' in request.resource.data)
+      );
+      allow create: if isAuthenticated();
+      allow delete: if isAdmin();
+
+      // Favorites subcollection
+      match /favorites/{favoriteId} {
+        allow read: if true;
+        allow write: if isAuthenticated() && isOwner(userId) && isNotBanned();
+      }
+
+      // Bookmarks subcollection
+      match /bookmarks/{bookmarkId} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
+
+      // Following subcollection
+      match /following/{followedId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+
+      // Followers subcollection
+      match /followers/{followerId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+    }
+
+    // Rest of the collections remain the same...
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isNotBanned() && 
+        request.resource.data.authorId == request.auth.uid;
+      allow update: if isAuthenticated() && isNotBanned() && (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount']) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isNotBanned();
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        isAdmin()
+      );
+    }
+
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create, delete: if isAuthenticated() && isNotBanned();
+    }
+
+    match /support_tickets/{ticketId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    match /media/{mediaId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAuthenticated() && isNotBanned() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favorites']);
+    }
+
+    match /collections/{collectionId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isNotBanned();
+      allow update, delete: if isAuthenticated() && isNotBanned() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
