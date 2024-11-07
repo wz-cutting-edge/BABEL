@@ -109,7 +109,7 @@ const CommentButton = styled.button`
   }
 `;
 
-const Comments = ({ postId, isAdmin }) => {
+const Comments = ({ postId, isAdmin, onCommentCountChange }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [usersData, setUsersData] = useState({});
@@ -181,7 +181,6 @@ const Comments = ({ postId, isAdmin }) => {
       const postRef = doc(db, 'posts', postId);
       const commentRef = doc(collection(db, 'comments'));
       
-      // Add the comment
       batch.set(commentRef, {
         postId,
         userId: user.uid,
@@ -189,13 +188,13 @@ const Comments = ({ postId, isAdmin }) => {
         createdAt: serverTimestamp()
       });
 
-      // Update the post's comment count
       batch.update(postRef, {
         commentCount: increment(1)
       });
 
       await batch.commit();
       setNewComment('');
+      onCommentCountChange(1);
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -205,7 +204,6 @@ const Comments = ({ postId, isAdmin }) => {
     if (!isAdmin) return;
     
     try {
-      // Get the current post data
       const postRef = doc(db, 'posts', postId);
       const postSnap = await getDoc(postRef);
       
@@ -214,14 +212,14 @@ const Comments = ({ postId, isAdmin }) => {
         return;
       }
 
-      // Delete the comment
       await deleteDoc(doc(db, 'comments', commentId));
       
-      // Update the post's comment count
       const currentCount = postSnap.data().commentCount || 0;
       await updateDoc(postRef, {
-        commentCount: Math.max(0, currentCount - 1) // Ensure we don't go below 0
+        commentCount: Math.max(0, currentCount - 1)
       });
+      
+      onCommentCountChange(-1);
     } catch (error) {
       console.error('Error deleting comment:', error);
     }

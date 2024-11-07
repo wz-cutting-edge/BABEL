@@ -2,22 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, limit, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '../../../services/firebase/config';
 import VerticalCarousel from './VerticalCarousel';
-import PostFeed from '../../posts/PostFeed';
 import styled from 'styled-components';
 
 const Layout = styled.div`
   position: relative;
-  padding-top: 64px;
   min-height: calc(100vh - 64px);
 `;
 
 const ContentGrid = styled.div`
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0 2rem;
   display: grid;
   grid-template-columns: 320px 1fr 320px;
   gap: 2rem;
+  position: relative;
 `;
 
 const ScrollableArea = styled.div`
@@ -25,18 +23,50 @@ const ScrollableArea = styled.div`
 `;
 
 const CarouselContainer = styled.div`
-  position: sticky;
-  top: 80px;
-  height: calc(100vh - 100px);
-  overflow-y: auto;
-  padding: 1rem 0;
+  position: fixed;
+  ${props => props.side === 'left' ? 'left: 0' : 'right: 0'};
+  top: 0;
+  height: 100vh;
+  width: 320px;
+  background: ${props => props.theme.secondaryBackground};
+  transform: translateX(${props => 
+    props.isRetracted 
+      ? (props.side === 'left' ? '-320px' : '320px') 
+      : '0'
+  });
+  transition: transform 0.3s ease-in-out;
+  padding-top: 0.5rem;
+  box-shadow: ${props => 
+    props.side === 'left' 
+      ? '2px 0 10px rgba(0,0,0,0.1)' 
+      : '-2px 0 10px rgba(0,0,0,0.1)'
+  };
+`;
 
-  &::-webkit-scrollbar {
-    display: none;
+const RetractTab = styled.div`
+  position: absolute;
+  ${props => props.side === 'left' ? 'right: -20px' : 'left: -20px'};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 60px;
+  background: ${props => props.theme.secondaryBackground};
+  border-radius: ${props => props.side === 'left' ? '0 8px 8px 0' : '8px 0 0 8px'};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: ${props => props.theme.shadowMd};
+
+  &:hover {
+    background: ${props => props.theme.primary}20;
   }
-  
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+`;
+
+const ContentWrapper = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
 `;
 
 const getTagFrequency = (favorites) => {
@@ -127,6 +157,8 @@ const RecommendedMedia = ({ userId }) => {
   const [books, setBooks] = useState([]);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [leftCarouselRetracted, setLeftCarouselRetracted] = useState(false);
+  const [rightCarouselRetracted, setRightCarouselRetracted] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -189,13 +221,23 @@ const RecommendedMedia = ({ userId }) => {
   return (
     <Layout>
       <ContentGrid>
-        <CarouselContainer>
+        <CarouselContainer isRetracted={leftCarouselRetracted} side="left">
+          <RetractTab 
+            side="left"
+            onClick={() => setLeftCarouselRetracted(!leftCarouselRetracted)}
+          >
+            {leftCarouselRetracted ? '►' : '◄'}
+          </RetractTab>
           <VerticalCarousel items={books} type="book" />
         </CarouselContainer>
-        <ScrollableArea>
-          <PostFeed userId={userId} />
-        </ScrollableArea>
-        <CarouselContainer>
+
+        <CarouselContainer isRetracted={rightCarouselRetracted} side="right">
+          <RetractTab 
+            side="right"
+            onClick={() => setRightCarouselRetracted(!rightCarouselRetracted)}
+          >
+            {rightCarouselRetracted ? '◄' : '►'}
+          </RetractTab>
           <VerticalCarousel items={videos} type="video" />
         </CarouselContainer>
       </ContentGrid>

@@ -403,7 +403,7 @@ const Profile = () => {
         const [followersSnapshot, followingSnapshot, postsSnapshot, collectionsSnapshot] = await Promise.all([
           getDocs(followersQuery),
           getDocs(followingQuery),
-          getDocs(query(collection(db, 'posts'), where('userId', '==', userId), orderBy('createdAt', 'desc'))),
+          getDocs(query(collection(db, 'posts'), where('authorId', '==', userId), orderBy('createdAt', 'desc'))),
           getDocs(query(collection(db, 'collections'), where('userId', '==', userId)))
         ]);
 

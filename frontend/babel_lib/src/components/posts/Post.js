@@ -11,11 +11,11 @@ import ReportModal from '../modals/ReportModal';
 const PostWrapper = styled.div`
   background-color: ${props => props.theme.surfaceColor};
   border: 1px solid ${props => props.theme.borderLight};
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 12px;
-  margin-bottom: 1rem;
   box-shadow: ${props => props.theme.shadowSm};
   transition: all 0.2s ease;
+  width: 100%;
   
   * {
     color: ${props => props.theme.text};
@@ -25,8 +25,15 @@ const PostWrapper = styled.div`
 const PostHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
+`;
+
+const ProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
 `;
 
 const UserInfo = styled.div`
@@ -36,6 +43,7 @@ const UserInfo = styled.div`
   .username {
     color: ${props => props.theme.text};
     font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
     
     &:hover {
@@ -133,18 +141,19 @@ const TimeStamp = styled.div`
   color: ${props => props.theme.textSecondary};
 `;
 
-const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => {
+const Post = React.memo(React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => {
+  console.log('Rendering post:', post.id);
   const [postData, setPostData] = useState(post);
-  const [userData, setUserData] = useState(authorData || null);
+  const [userData, setUserData] = useState(authorData || post.userData || null);
   const [hasLiked, setHasLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Combine the two user data effects into one
   useEffect(() => {
-    if (!authorData && postData.userId) {
-      // Only fetch user data if not provided through props
+    if (!userData && postData.userId) {
       const fetchUserData = async () => {
         try {
           const userDoc = await getDoc(doc(db, 'users', postData.userId));
@@ -157,32 +166,16 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
       };
       fetchUserData();
     }
-  }, [postData.userId, authorData]);
+  }, [postData.userId, userData]);
 
-  // Listen to post updates
+  // Check likes only when user changes
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, 'posts', post.id), (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        setPostData({ 
-          id: doc.id, 
-          ...data,
-          commentCount: data.commentCount || 0
-        });
-      }
-    });
+    if (!user) {
+      setHasLiked(false);
+      return;
+    }
 
-    return () => unsubscribe();
-  }, [post.id]);
-
-  // Check if user has liked the post
-  useEffect(() => {
     const checkLike = async () => {
-      if (!user) {
-        setHasLiked(false);
-        return;
-      }
-
       try {
         const likeId = `${post.id}_${user.uid}`;
         const likeDoc = await getDoc(doc(db, 'likes', likeId));
@@ -195,21 +188,24 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
     checkLike();
   }, [post.id, user]);
 
-  const handleLike = async (e) => {
-    e.stopPropagation();
+  const handleLike = async () => {
     if (!user) {
-      console.log('Please log in to like posts');
+      navigate('/login');
       return;
     }
 
-    const likeId = `${post.id}_${user.uid}`;
-    const likeRef = doc(db, 'likes', likeId);
-    const postRef = doc(db, 'posts', post.id);
-    
     try {
-      // Optimistically update UI
+      const likeId = `${post.id}_${user.uid}`;
+      const likeRef = doc(db, 'likes', likeId);
+      const postRef = doc(db, 'posts', post.id);
+
+      // Optimistic update
       setHasLiked(prev => !prev);
-      
+      setPostData(prev => ({
+        ...prev,
+        likes: prev.likes + (hasLiked ? -1 : 1)
+      }));
+
       if (hasLiked) {
         // Remove like
         await deleteDoc(likeRef);
@@ -230,6 +226,10 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
     } catch (error) {
       // Revert optimistic update on error
       setHasLiked(prev => !prev);
+      setPostData(prev => ({
+        ...prev,
+        likes: prev.likes + (hasLiked ? 1 : -1)
+      }));
       console.error('Error updating like:', error);
     }
   };
@@ -247,15 +247,15 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
   return (
     <PostWrapper ref={ref}>
       <PostHeader>
-        <PostAvatar 
+        <ProfileImage 
           src={userData?.photoURL || '/default-avatar.png'} 
-          alt={userData?.username} 
-          onClick={() => handleUserClick(post.userId)}
+          alt={userData?.username || 'User'} 
+          onClick={() => handleUserClick(post.authorId)}
         />
         <UserInfo>
           <span 
             className="username" 
-            onClick={() => handleUserClick(post.userId)}
+            onClick={() => handleUserClick(post.authorId)}
           >
             {userData?.username || 'Anonymous'}
           </span>
@@ -264,7 +264,7 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
           </span>
         </UserInfo>
         {isAdmin && (
-          <ActionButton onClick={() => onDelete(post.id)} style={{ color: props => props.theme.error }}>
+          <ActionButton onClick={() => onDelete(post.id)}>
             <Trash2 size={16} />
           </ActionButton>
         )}
@@ -296,9 +296,20 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
           </ActionButton>
         )}
       </ActionBar>
-      {showComments && <Comments postId={postData.id} isAdmin={isAdmin} />}
+      {showComments && (
+        <Comments 
+          postId={postData.id} 
+          isAdmin={isAdmin} 
+          onCommentCountChange={(change) => {
+            setPostData(prev => ({
+              ...prev,
+              commentCount: (prev.commentCount || 0) + change
+            }));
+          }}
+        />
+      )}
     </PostWrapper>
   );
-});
+}));
 
 export default Post;

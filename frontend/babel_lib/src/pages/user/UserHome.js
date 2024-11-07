@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import RecommendedMedia from '../../components/features/media/RecommendedMedia';
+import PostFeed from '../../components/posts/PostFeed';
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -38,6 +39,7 @@ const UserHome = () => {
 
   return (
     <PageWrapper>
+      <PostFeed userId={user.uid} />
       <RecommendedMedia userId={user.uid} />
     </PageWrapper>
   );
