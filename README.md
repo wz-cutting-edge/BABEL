@@ -1,81 +1,88 @@
-# BABEL: Digital Library Archive with Social Features
+# BABEL - Social Media Platform
 
-**BABEL** is a modern web application designed to combine the functionality of a digital library archive, social networking platform, and content management system. Built with a scalable and secure architecture, BABEL allows users to explore, share, and interact with a wide array of digital media in a collaborative environment.
+## Overview
+**BABEL** is a social media platform that enables users to create and share posts, engage with others' content, and build communities. With a robust user system, content moderation tools, and media integration, BABEL offers a dynamic and secure environment for social interaction.
 
 ## Table of Contents
-
-- [Core Purpose](#core-purpose)
-- [Technical Stack](#technical-stack)
-- [Key Features](#key-features)
-- [Architecture Overview](#architecture-overview)
-- [Planned Features](#planned-features)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Technology Stack](#technology-stack)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Environment Configuration](#environment-configuration)
 - [Contributing](#contributing)
 - [License](#license)
 
-## Core Purpose
+## Features
 
-BABEL’s goal is to serve as a:
-1. **Digital Library** for browsing and accessing digital content.
-2. **Social Platform** for users to share and discuss content.
-3. **Content Management System** with tools for administrators to manage the library and user interactions.
+### Authentication
+- User registration and login
+- Profile management
+- Ban system for content moderation
 
-## Technical Stack
-
-- **Frontend**: [React.js](https://reactjs.org/) with `styled-components`
-- **Backend**: [Django](https://www.djangoproject.com/) (planned)
-- **Database**: [Firebase](https://firebase.google.com/) (Authentication, Firestore, Realtime Database)
-- **Containerization**: [Docker](https://www.docker.com/) (planned)
-
-## Key Features
-
-### Authentication System
-- **Email/Password Authentication**
-- **Protected Routes** with Role-based Access
-- **User Session Management** and secure token handling.
-
-### User Profile Management
-- Customizable **user profiles**, including bio and profile picture.
-- Persistent user data in Firebase Firestore.
-
-### Admin Dashboard
-- **Role-based Access Control** for admins.
-- Tools for **content management**, **user report handling**, **analytics**, and **customer support**.
+### Posts
+- Text and image post creation
+- Like and comment functionality
+- Media attachment support
+- Reporting system for content moderation
 
 ### Social Features
-- **Post Creation** and viewing for sharing media.
-- **Activity Feed** for social interactions.
-- Support for **comments** and **likes**.
+- Follow/unfollow users
+- User profiles with customizable information
+- Activity feed based on followed users
+- Nested comment threads
 
-## Architecture Overview
+### Content Moderation
+- Admin dashboard with management tools
+- User banning system for handling violations
+- Report handling for posts and comments
 
-### Firebase Integration
-- BABEL uses Firebase services, including Authentication, Firestore, and Realtime Database.
-- Environment variables are configured to keep Firebase keys secure.
+### Media Integration
+- Image and video attachments for posts
+- Collections system to organize favorite posts
+- Ability to mark favorites for quick access
 
-### Routing System
-- Implemented **Protected Routes** and **Role-based Access Control** for a secure navigation experience.
-- Fully **Responsive Navigation**.
+## Project Structure
+Here’s an overview of the project's structure:
 
-### Security
-- Environment-based configuration for production and development.
-- **Role-based Access Control** and session management to protect sensitive data and routes.
+```plaintext
+babel/
+├── frontend/
+│   ├── babel_lib/
+│   │   ├── src/
+│   │   │   ├── components/           # UI components organized by functionality
+│   │   │   │   ├── posts/            # Components related to post functionality
+│   │   │   │   ├── common/           # Reusable common components
+│   │   │   │   └── features/         # Specialized feature components
+│   │   │   ├── contexts/             # Context API for global state management (e.g., auth)
+│   │   │   ├── pages/                # Main pages of the application (Home, Profile, Admin, etc.)
+│   │   │   └── services/             # Firebase services and API interactions
+│   │   └── public/                   # Static assets and metadata
+│   └── package.json
+└── firestore-rules.txt               # Firebase Security Rules for Firestore and Storage
+```
 
-## Planned Features
+## Technology Stack
 
-The following features are currently in development:
-- **Content Categorization** by type and genre
-- **User Collections** for saving favorite content
-- **Content Rating System** to help users find popular items
-- **Public Forums** for user discussions
-- **Report Management System** for admin moderation
-- **Media Upload Capabilities** for admins
-- **Analytics Tracking** for insights into user behavior
+### Frontend
+- **React 18**: Core framework for building the UI
+- **Styled Components**: For dynamic styling of components
+- **React Router v6**: For client-side routing and navigation
+- **Lucide React**: Icon library for user interface components
+
+### Backend & Infrastructure
+- **Firebase Authentication**: Manages secure user authentication
+- **Cloud Firestore**: NoSQL database for storing users, posts, comments, likes, follows, and other user interactions
+- **Firebase Storage**: Stores media files, including profile pictures and post attachments
+- **Firebase Security Rules**: Enforces read/write permissions based on user roles and actions
+
+### Additional Libraries
+- **react-pdf**: Renders PDF files in the browser
+- **Tailwind CSS**: For responsive, utility-first styling
+- **dotenv**: Manages environment variables securely
 
 ## Installation
 
-To run BABEL locally:
+To set up BABEL locally:
 
 1. **Clone the repository**:
    ```bash
@@ -83,53 +90,39 @@ To run BABEL locally:
    cd babel
    ```
 
-2. **Frontend Setup**:
-   - Navigate to the frontend directory:
-     ```bash
-     cd frontend
-     ```
-   - Install dependencies:
-     ```bash
-     npm install
-     ```
-   - Create a `.env` file and add your Firebase credentials:
-     ```plaintext
-     REACT_APP_FIREBASE_API_KEY=your_api_key
-     REACT_APP_FIREBASE_AUTH_DOMAIN=your_auth_domain
-     REACT_APP_FIREBASE_PROJECT_ID=your_project_id
-     ...
-     ```
-   - Start the React development server:
-     ```bash
-     npm start
-     ```
+2. **Navigate to the frontend directory**:
+   ```bash
+   cd frontend
+   ```
 
-3. **Backend Setup** (planned with Django):
-   - Navigate to the backend directory:
-     ```bash
-     cd backend
-     ```
-   - Set up a virtual environment and install Django:
-     ```bash
-     python -m venv env
-     source env/bin/activate  # For Windows use 'env\Scripts\activate'
-     pip install -r requirements.txt
-     ```
-   - Run the Django server:
-     ```bash
-     python manage.py runserver
-     ```
+3. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-4. **Docker Setup** (planned):
-   - **Dockerfile** and **docker-compose.yml** configurations are planned to support deployment.
+4. **Start the development server**:
+   ```bash
+   npm start
+   ```
 
-## Usage
+The app will run locally at `http://localhost:3000`.
 
-Once the setup is complete, you can:
-- **Access the frontend** at `http://localhost:3000` (default React port).
-- **Access the backend** at `http://localhost:8000` (default Django port).
+## Environment Configuration
 
-Sign up or log in using Firebase authentication to access the BABEL features.
+1. **Set up Firebase**:
+   - Create a Firebase project and enable Authentication, Firestore, and Storage.
+   - Add your Firebase credentials to a `.env` file in the `frontend` directory:
+
+   ```plaintext
+   REACT_APP_FIREBASE_API_KEY=your_api_key
+   REACT_APP_FIREBASE_AUTH_DOMAIN=your_auth_domain
+   REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   REACT_APP_FIREBASE_APP_ID=your_app_id
+   ```
+
+2. **Security**: Ensure `.env` is listed in `.gitignore`.
 
 ## Contributing
 
@@ -138,6 +131,9 @@ We welcome contributions to enhance BABEL. To contribute:
 2. Create a new branch for your feature or bug fix.
 3. Open a pull request with a detailed description of your changes.
 
+### Original Contributors
+- William Zheng
+
 ## License
 
-BABEL is [Unlicensed](LICENSE). You’re free to to copy, modify, publish, use, compile, sell, or distribute this software this software.
+BABEL is [Unlicensed](LICENSE). You’re free to copy, modify, publish, use, compile, sell, or distribute this software.
