@@ -101,17 +101,23 @@ const CollectionViewer = () => {
           return;
         }
 
-        const collectionData = { id: collectionDoc.id, ...collectionDoc.data() };
+        const collectionData = { 
+          id: collectionDoc.id, 
+          ...collectionDoc.data(),
+          items: collectionDoc.data().items || []
+        };
         setCollection(collectionData);
 
-        // Fetch collection owner's data
-        const ownerDoc = await getDoc(doc(db, 'users', collectionData.userId));
-        if (ownerDoc.exists()) {
-          setCollectionOwner(ownerDoc.data());
+        // Only fetch owner if userId exists
+        if (collectionData.userId) {
+          const ownerDoc = await getDoc(doc(db, 'users', collectionData.userId));
+          if (ownerDoc.exists()) {
+            setCollectionOwner(ownerDoc.data());
+          }
         }
 
-        // Fetch media items only if the collection has items
-        if (collectionData.items && collectionData.items.length > 0) {
+        // Fetch media items only if there are items
+        if (collectionData.items.length > 0) {
           const mediaPromises = collectionData.items.map(mediaId => 
             getDoc(doc(db, 'media', mediaId))
           );
@@ -131,7 +137,9 @@ const CollectionViewer = () => {
       }
     };
 
-    fetchCollection();
+    if (collectionId) {
+      fetchCollection();
+    }
   }, [collectionId]);
 
   if (loading) return <Loading />;

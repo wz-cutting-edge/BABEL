@@ -49,10 +49,15 @@ const ReportModal = ({ isOpen, onClose, contentId, contentType, reportedUserId }
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!contentId || !contentType || !reportedUserId || !user) {
+      console.error('Missing required fields:', { contentId, contentType, reportedUserId, userId: user?.uid });
+      return;
+    }
+    
     try {
       await addDoc(collection(db, 'reports'), {
         contentId,
-        contentType, // 'post' or 'comment'
+        contentType,
         reportedUserId,
         reporterId: user.uid,
         reason,

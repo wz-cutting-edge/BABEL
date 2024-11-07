@@ -252,7 +252,7 @@ const Collections = () => {
 
     try {
       const newCollection = {
-        name: newCollectionName,
+        name: newCollectionName.trim(),
         description: '',
         userId: user.uid,
         items: [],
@@ -340,11 +340,11 @@ const Collections = () => {
             ))}
           </CollectionGrid>
 
-          {selectedCollection && (
+          {selectedCollection && selectedCollection.items && Array.isArray(selectedCollection.items) && (
             <CollectionContent>
               <h3>{selectedCollection.name} Contents</h3>
               <MediaGrid>
-                {selectedCollection.items?.map(mediaId => (
+                {selectedCollection.items.map(mediaId => (
                   <CollectionMediaItem 
                     key={mediaId} 
                     mediaId={mediaId}

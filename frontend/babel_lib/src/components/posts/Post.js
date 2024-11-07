@@ -275,9 +275,9 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
           <ReportModal
             isOpen={showReportModal}
             onClose={() => setShowReportModal(false)}
-            contentId={postData.id}
+            contentId={post.id}
             contentType="post"
-            reportedUserId={postData.userId}
+            reportedUserId={post.userId || post.authorId}
           />
         </MoreOptions>
       </PostHeader>

@@ -172,13 +172,13 @@ const CreatePost = () => {
       });
       console.log('Post data being sent:', {
         content: content.trim(),
-        userId: user.uid,
+        authorId: user.uid,
         createdAt: serverTimestamp()
       });
 
       const postData = {
         content: content.trim(),
-        userId: user.uid,
+        authorId: user.uid,
         createdAt: serverTimestamp()
       };
 

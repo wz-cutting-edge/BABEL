@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
 import { Flag, Trash2, CheckCircle } from 'lucide-react';
 import { db } from '../../services/firebase/config';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, increment } from 'firebase/firestore';
 
 const PageWrapper = styled.div`
   padding: 2rem;
@@ -118,15 +118,26 @@ const AdminReports = () => {
 
   const handleDelete = async (report) => {
     try {
+      // If it's a comment, get the postId and update the comment count
+      if (report.contentType === 'comment') {
+        const commentDoc = await getDoc(doc(db, 'comments', report.contentId));
+        if (commentDoc.exists()) {
+          const commentData = commentDoc.data();
+          // Decrement the comment count on the parent post
+          await updateDoc(doc(db, 'posts', commentData.postId), {
+            commentCount: increment(-1)
+          });
+        }
+      }
+
       // Delete the reported content
       await deleteDoc(doc(db, report.contentType + 's', report.contentId));
       
-      // Update local state to remove the deleted report
-      setReports(prevReports => prevReports.filter(r => r.contentId !== report.contentId));
-      setReportedContent(prevContent => {
-        const newContent = { ...prevContent };
-        delete newContent[report.contentId];
-        return newContent;
+      // Update the report status to resolved
+      await updateDoc(doc(db, 'reports', report.id), {
+        status: 'resolved',
+        resolvedAt: serverTimestamp(),
+        resolution: 'content_removed'
       });
 
       // Create notification for the content owner

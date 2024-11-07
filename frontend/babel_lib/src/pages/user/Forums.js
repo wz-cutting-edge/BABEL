@@ -142,27 +142,35 @@ const Forums = () => {
 
     const unsubscribe = onSnapshot(q, 
       async (snapshot) => {
-        const postsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        const userIds = [...new Set(postsData.map(post => post.userId))];
-        
-        const usersSnapshot = await Promise.all(
-          userIds.map(userId => getDoc(doc(db, 'users', userId)))
-        );
-        
-        const userData = {};
-        usersSnapshot.forEach(doc => {
-          if (doc.exists()) {
-            userData[doc.id] = doc.data();
-          }
-        });
-        
-        setUsersData(userData);
-        setPosts(postsData);
-        setLoading(false);
+        try {
+          const postsData = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            userId: doc.data().userId || doc.data().authorId
+          }));
+          
+          const validPosts = postsData.filter(post => post.userId);
+          const userIds = [...new Set(validPosts.map(post => post.userId))];
+          
+          const usersSnapshot = await Promise.all(
+            userIds.map(userId => getDoc(doc(db, 'users', userId)))
+          );
+          
+          const userData = {};
+          usersSnapshot.forEach(doc => {
+            if (doc.exists()) {
+              userData[doc.id] = doc.data();
+            }
+          });
+          
+          setUsersData(userData);
+          setPosts(validPosts);
+        } catch (err) {
+          console.error('Error processing posts:', err);
+          setError('Failed to load posts');
+        } finally {
+          setLoading(false);
+        }
       },
       (err) => {
         console.error('Error fetching posts:', err);
