@@ -1,7 +1,7 @@
-# BABEL - Social Media Platform
+# BABEL - Digital Library Archive & Social Platform
 
 ## Overview
-**BABEL** is a social media platform that enables users to create and share posts, engage with others' content, and build communities. With a robust user system, content moderation tools, and media integration, BABEL offers a dynamic and secure environment for social interaction.
+**BABEL** is a digital library archive and social platform for books, textbooks, movies, videos, and more. Join our community to discover, share, and discuss your favorite content. With a robust user system, content moderation tools, and media integration, BABEL offers a dynamic and secure environment for social interaction and content discovery.
 
 ## Table of Contents
 - [Features](#features)
