@@ -23,50 +23,86 @@ import CollectionMediaItem from '../../components/features/collections/Collectio
 
 const CollectionsWrapper = styled.div`
   padding: 6rem 2rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+  
+  h2 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 `;
 
 const CollectionGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 `;
 
 const CollectionCard = styled.div`
-  background-color: ${props => props.theme.secondaryBackground};
-  padding: 1.5rem;
-  border-radius: 8px;
+  background: ${props => props.theme.secondaryBackground};
+  padding: 2rem;
+  border-radius: 12px;
   position: relative;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
   cursor: pointer;
+  border: 2px solid ${props => props.theme.borderLight};
+  box-shadow: ${props => props.theme.shadowSm};
+
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: ${props => props.theme.text};
+  }
+
+  p {
+    color: ${props => props.theme.textSecondary};
+    font-size: 0.9rem;
+  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    border-color: ${props => props.theme.primary}50;
+    box-shadow: ${props => props.theme.shadowLg};
   }
 
   &.selected {
-    border: 2px solid ${props => props.theme.primary};
-    transform: translateY(-2px);
+    border-color: ${props => props.theme.primary};
+    background: ${props => props.theme.primary}10;
+    box-shadow: 0 0 0 2px ${props => props.theme.primary}30;
   }
 `;
 
 const DeleteButton = styled.button`
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: none;
+  top: 1rem;
+  right: 1rem;
+  background: ${props => props.theme.error}20;
   border: none;
   color: ${props => props.theme.error};
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: ${props => props.theme.error};
+    color: white;
+  }
 
   ${CollectionCard}:hover & {
     opacity: 1;
@@ -76,14 +112,28 @@ const DeleteButton = styled.button`
 const CreateCollectionForm = styled.form`
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+  background: ${props => props.theme.secondaryBackground};
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: ${props => props.theme.shadowMd};
 `;
 
 const Input = styled.input`
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.accent};
-  border-radius: 5px;
+  padding: 0.75rem 1rem;
+  border: 2px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
   flex: 1;
+  font-size: 1rem;
+  background: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: ${props => props.theme.primary};
+    outline: none;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}30;
+  }
 `;
 
 const CollectionItems = styled.div`
@@ -115,17 +165,23 @@ const OfflineMessage = styled.div`
 `;
 
 const CollectionContent = styled.div`
-  margin-top: 1rem;
-  padding: 1rem;
+  margin-top: 2rem;
+  padding: 2rem;
   background: ${props => props.theme.secondaryBackground};
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: ${props => props.theme.shadowMd};
+
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: ${props => props.theme.text};
+  }
 `;
 
 const MediaGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
 `;
 
 const MediaItem = styled.div`
@@ -139,6 +195,17 @@ const MediaItem = styled.div`
 
 const ViewButton = styled(Button)`
   margin-top: auto;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: ${props => props.theme.textSecondary};
+  
+  p {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+  }
 `;
 
 const Collections = () => {

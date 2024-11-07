@@ -12,162 +12,114 @@ import { useAuth } from '../contexts/AuthContext';
 
 const SearchWrapper = styled.div`
   padding: 6rem 2rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 `;
 
 const SearchHeader = styled.div`
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+  
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 `;
 
 const SearchForm = styled.form`
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
+  background: ${props => props.theme.secondaryBackground};
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: ${props => props.theme.shadowMd};
 `;
 
 const SearchInput = styled.input`
   flex: 1;
-  padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  border: 2px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
   font-size: 1rem;
-  background-color: ${props => props.theme.secondaryBackground};
+  background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  transition: all 0.2s ease;
 
   &:focus {
-    outline: none;
     border-color: ${props => props.theme.primary};
+    outline: none;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}30;
   }
 `;
 
-const FilterButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+const StyledSelect = styled.select`
   padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.secondaryBackground};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  cursor: pointer;
+  border: 2px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  min-width: 150px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-  &:hover {
-    background-color: ${props => props.theme.background};
+  &:focus {
+    border-color: ${props => props.theme.primary};
+    outline: none;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}30;
   }
 `;
 
 const ResultsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
   padding: 1rem 0;
-`;
-
-const StyledSelect = styled.select`
-  padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  background-color: ${props => props.theme.secondaryBackground};
-  color: ${props => props.theme.text};
-  min-width: 120px;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-  }
 `;
 
 const MediaCard = styled.div`
   background: ${props => props.theme.secondaryBackground};
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  padding: 1rem;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
+  border: 2px solid ${props => props.theme.borderLight};
+  box-shadow: ${props => props.theme.shadowSm};
 
   &:hover {
     transform: translateY(-4px);
-  }
-`;
-
-const MediaInfo = styled.div`
-  padding: 1rem;
-`;
-
-const MediaTitle = styled.h3`
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-`;
-
-const MediaAuthor = styled.p`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-  margin: 0 0 0.5rem 0;
-`;
-
-const MediaYear = styled.span`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.8rem;
-`;
-
-const MediaImage = styled.img`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-`;
-
-const MediaType = styled.span`
-  font-size: 0.8rem;
-  color: ${props => props.theme.textSecondary};
-  background: ${props => props.theme.background};
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
-  margin-top: 0.5rem;
-`;
-
-const MediaActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-`;
-
-const ActionButton = styled.button`
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: ${props => props.primary ? props.theme.primary : props.theme.secondaryBackground};
-  color: ${props => props.primary ? 'white' : props.theme.text};
-  
-  &:hover {
-    background: ${props => props.primary ? props.theme.primaryHover : props.theme.border};
+    border-color: ${props => props.theme.primary}50;
+    box-shadow: ${props => props.theme.shadowLg};
   }
 `;
 
 const MediaThumbnail = styled.div`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  position: relative;
+  height: 320px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${props => props.theme.background};
+  border-bottom: 2px solid ${props => props.theme.borderLight};
 
-  &:before {
-    content: '';
-    display: ${props => props.image ? 'none' : 'block'};
-    background-color: ${props => props.theme.background};
-    border-radius: 4px;
-    padding: 0.25rem 0.5rem;
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    color: white;
-    font-size: 0.8rem;
+  svg {
+    color: ${props => props.theme.textSecondary};
+    opacity: 0.5;
   }
+`;
+
+const MediaInfo = styled.div`
+  padding: 1.5rem;
+`;
+
+const MediaTitle = styled.h3`
+  margin: 0 0 0.75rem 0;
+  font-size: 1.2rem;
+  color: ${props => props.theme.text};
 `;
 
 const MediaMeta = styled.div`
@@ -176,16 +128,44 @@ const MediaMeta = styled.div`
   gap: 0.5rem;
   color: ${props => props.theme.textSecondary};
   font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+
+  svg {
+    color: ${props => props.theme.primary};
+  }
 `;
 
-const EnterButton = styled(ActionButton)`
-  margin-left: auto;
-  background: ${props => props.theme.primary};
-  color: white;
+const MediaActions = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+const ActionButton = styled.button`
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
   
-  &:hover {
-    background: ${props => props.theme.primaryHover};
-  }
+  ${props => props.primary ? `
+    background: ${props.theme.primary};
+    color: white;
+    
+    &:hover {
+      background: ${props.theme.primary}ee;
+    }
+  ` : `
+    background: ${props.theme.background};
+    color: ${props.theme.text};
+    border: 2px solid ${props.theme.borderLight};
+    
+    &:hover {
+      border-color: ${props.theme.primary};
+      color: ${props.theme.primary};
+    }
+  `}
 `;
 
 const genres = [
@@ -335,9 +315,9 @@ const Search = () => {
               </option>
             ))}
           </StyledSelect>
-          <EnterButton onClick={() => searchHandler('')}>
+          <ActionButton onClick={() => searchHandler('')}>
             Enter
-          </EnterButton>
+          </ActionButton>
         </SearchForm>
       </SearchHeader>
 

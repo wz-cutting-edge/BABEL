@@ -83,7 +83,7 @@ const Footer = () => {
         <FooterSection>
           <FooterTitle>Connect</FooterTitle>
           <SocialLinks>
-            <FooterLink to="https://github.com/your-repo" target="_blank">
+            <FooterLink to="https://github.com/wz-cutting-edge/BABEL" target="_blank">
               <Github size={16} /> GitHub
             </FooterLink>
             <FooterLink to="https://twitter.com/your-handle" target="_blank">

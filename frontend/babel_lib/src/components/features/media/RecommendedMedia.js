@@ -6,17 +6,13 @@ import PostFeed from '../../posts/PostFeed';
 import styled from 'styled-components';
 
 const Layout = styled.div`
-  position: fixed;
-  top: 64px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
+  position: relative;
+  padding-top: 64px;
+  min-height: calc(100vh - 64px);
 `;
 
 const ContentGrid = styled.div`
   max-width: 1600px;
-  height: 100%;
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
@@ -25,32 +21,20 @@ const ContentGrid = styled.div`
 `;
 
 const ScrollableArea = styled.div`
-  height: 100%;
-  overflow-y: auto;
   padding: 2rem 0;
-  pointer-events: auto;
-  
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  
-  /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 `;
 
 const CarouselContainer = styled.div`
-  pointer-events: auto;
-  height: 100%;
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 100px);
   overflow-y: auto;
-  
-  /* Hide scrollbar for Chrome, Safari and Opera */
+  padding: 1rem 0;
+
   &::-webkit-scrollbar {
     display: none;
   }
   
-  /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none;
   scrollbar-width: none;
 `;

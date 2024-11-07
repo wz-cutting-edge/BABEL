@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,9 +6,27 @@ import RecommendedMedia from '../../components/features/media/RecommendedMedia';
 
 const PageWrapper = styled.div`
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background: ${props => props.theme.background};
-  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  scroll-behavior: smooth;
+
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: ${props => props.theme.background};
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.borderLight};
+    border-radius: 4px;
+  }
 `;
 
 const UserHome = () => {
