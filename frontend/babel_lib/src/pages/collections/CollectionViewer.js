@@ -63,6 +63,26 @@ const MediaMeta = styled.div`
   font-size: 0.875rem;
 `;
 
+const CollectionMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: ${props => props.theme.textSecondary};
+  grid-column: 1 / -1;
+  
+  p {
+    font-size: 1.1rem;
+  }
+`;
+
 const CollectionViewer = () => {
   const { collectionId } = useParams();
   const navigate = useNavigate();
@@ -70,6 +90,7 @@ const CollectionViewer = () => {
   const [mediaItems, setMediaItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [collectionOwner, setCollectionOwner] = useState(null);
 
   useEffect(() => {
     const fetchCollection = async () => {
@@ -83,17 +104,25 @@ const CollectionViewer = () => {
         const collectionData = { id: collectionDoc.id, ...collectionDoc.data() };
         setCollection(collectionData);
 
-        // Fetch all media items in the collection
-        const mediaPromises = collectionData.items.map(mediaId => 
-          getDoc(doc(db, 'media', mediaId))
-        );
-        
-        const mediaResults = await Promise.all(mediaPromises);
-        const mediaData = mediaResults
-          .filter(doc => doc.exists())
-          .map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        setMediaItems(mediaData);
+        // Fetch collection owner's data
+        const ownerDoc = await getDoc(doc(db, 'users', collectionData.userId));
+        if (ownerDoc.exists()) {
+          setCollectionOwner(ownerDoc.data());
+        }
+
+        // Fetch media items only if the collection has items
+        if (collectionData.items && collectionData.items.length > 0) {
+          const mediaPromises = collectionData.items.map(mediaId => 
+            getDoc(doc(db, 'media', mediaId))
+          );
+          
+          const mediaResults = await Promise.all(mediaPromises);
+          const mediaData = mediaResults
+            .filter(doc => doc.exists())
+            .map(doc => ({ id: doc.id, ...doc.data() }));
+          
+          setMediaItems(mediaData);
+        }
       } catch (err) {
         console.error('Error fetching collection:', err);
         setError('Failed to load collection');
@@ -114,7 +143,11 @@ const CollectionViewer = () => {
       <CollectionHeader>
         <div>
           <h2>{collection.name}</h2>
-          <p>{mediaItems.length} items</p>
+          <CollectionMeta>
+            <span>Created by {collectionOwner?.username || 'Unknown User'}</span>
+            <span>•</span>
+            <span>{mediaItems.length} items</span>
+          </CollectionMeta>
         </div>
       </CollectionHeader>
 
@@ -134,12 +167,21 @@ const CollectionViewer = () => {
               <MediaMeta>
                 {item.type === 'book' ? <Book size={16} /> : <Video size={16} />}
                 <span>{item.author}</span>
-                <span>•</span>
-                <span>{item.year}</span>
+                {item.year && (
+                  <>
+                    <span>•</span>
+                    <span>{item.year}</span>
+                  </>
+                )}
               </MediaMeta>
             </MediaInfo>
           </MediaCard>
         ))}
+        {mediaItems.length === 0 && (
+          <EmptyState>
+            <p>This collection is empty</p>
+          </EmptyState>
+        )}
       </MediaList>
     </ViewerWrapper>
   );

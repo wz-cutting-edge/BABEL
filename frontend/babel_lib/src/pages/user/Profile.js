@@ -183,22 +183,56 @@ const CollectionsGrid = styled.div`
 
 const CollectionCard = styled.div`
   background: ${props => props.theme.secondaryBackground};
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 1.5rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
+  border: 2px solid ${props => props.theme.borderLight};
+  box-shadow: ${props => props.theme.shadowSm};
+  position: relative;
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-4px);
+    border-color: ${props => props.theme.primary}50;
+    box-shadow: ${props => props.theme.shadowLg};
   }
 
   h3 {
+    font-size: 1.25rem;
     margin-bottom: 0.5rem;
+    color: ${props => props.theme.text};
   }
 
   p {
     color: ${props => props.theme.textSecondary};
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+`;
+
+const CollectionPreview = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const PreviewThumbnail = styled.div`
+  width: 100%;
+  height: 80px;
+  background-image: url(${props => props.image});
+  background-size: cover;
+  background-position: center;
+  border-radius: 6px;
+  background-color: ${props => props.theme.background};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    color: ${props => props.theme.textSecondary};
+    opacity: 0.5;
   }
 `;
 
@@ -441,6 +475,47 @@ const Profile = () => {
     return () => unsubscribe();
   }, [user, userId]);
 
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const collectionsRef = collection(db, 'collections');
+        const q = query(collectionsRef, where('userId', '==', userId));
+        const querySnapshot = await getDocs(q);
+        
+        const collectionsData = await Promise.all(querySnapshot.docs.map(async doc => {
+          const collection = { id: doc.id, ...doc.data() };
+          
+          if (collection.items && collection.items.length > 0) {
+            const mediaPromises = collection.items.map(mediaId => 
+              getDoc(doc(db, 'media', mediaId))
+            );
+            
+            const mediaResults = await Promise.all(mediaPromises);
+            const mediaItems = mediaResults
+              .filter(doc => doc.exists())
+              .map(doc => ({ id: doc.id, ...doc.data() }));
+              
+            collection.mediaItems = mediaItems;
+            collection.itemCount = mediaItems.length;
+          } else {
+            collection.mediaItems = [];
+            collection.itemCount = 0;
+          }
+          
+          return collection;
+        }));
+        
+        setCollections(collectionsData);
+      } catch (error) {
+        console.error('Error fetching collections:', error);
+      }
+    };
+
+    if (userId) {
+      fetchCollections();
+    }
+  }, [userId]);
+
   const handleAvatarChange = async (e) => {
     if (!isOwnProfile) return;
     const file = e.target.files[0];
@@ -672,6 +747,18 @@ const Profile = () => {
               >
                 <h3>{collection.name}</h3>
                 <p>{collection.items?.length || 0} items</p>
+                <CollectionPreview>
+                  {collection.mediaItems?.slice(0, 4).map((media) => (
+                    <PreviewThumbnail 
+                      key={media.id}
+                      image={media.coverUrl}
+                    >
+                      {!media.coverUrl && (
+                        <Book size={24} />
+                      )}
+                    </PreviewThumbnail>
+                  ))}
+                </CollectionPreview>
               </CollectionCard>
             ))}
           </CollectionsGrid>

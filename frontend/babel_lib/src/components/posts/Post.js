@@ -36,6 +36,11 @@ const UserInfo = styled.div`
   .username {
     color: ${props => props.theme.text};
     font-weight: 600;
+    cursor: pointer;
+    
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .timestamp {
@@ -49,6 +54,12 @@ const PostAvatar = styled.img`
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 const PostImage = styled.img`
@@ -229,18 +240,27 @@ const Post = React.forwardRef(({ post, onDelete, isAdmin, authorData }, ref) => 
     }
   };
 
+  const handleUserClick = (userId) => {
+    navigate(`/profile/${userId}`);
+  };
+
   return (
     <PostWrapper ref={ref}>
       <PostHeader>
-        <img 
+        <PostAvatar 
           src={userData?.photoURL || '/default-avatar.png'} 
           alt={userData?.username} 
-          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+          onClick={() => handleUserClick(post.userId)}
         />
         <UserInfo>
-          <span className="username">{userData?.username || 'Anonymous'}</span>
+          <span 
+            className="username" 
+            onClick={() => handleUserClick(post.userId)}
+          >
+            {userData?.username || 'Anonymous'}
+          </span>
           <span className="timestamp">
-            {new Date(postData.createdAt?.toDate()).toLocaleString()}
+            {new Date(post.createdAt?.toDate()).toLocaleString()}
           </span>
         </UserInfo>
         {isAdmin && (

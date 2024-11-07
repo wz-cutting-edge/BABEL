@@ -95,13 +95,28 @@ const UserResult = styled.div`
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  border-bottom: 1px solid ${props => props.theme.borderLight};
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   &:hover {
     background: ${props => props.theme.backgroundAlt};
   }
 
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
   strong {
     color: ${props => props.theme.text};
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
   }
 
   div {
