@@ -16,8 +16,10 @@ import { useAuth } from '../../contexts/AuthContext';
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const ViewerWrapper = styled.div`
-  padding: 6rem 2rem 2rem;
-  min-height: calc(100vh - 100px);
+  padding: 4rem 0 0;
+  min-height: 100vh;
+  background: ${props => props.theme.background};
+  position: relative;
 `;
 
 const ContentWrapper = styled.div`
@@ -35,7 +37,7 @@ const PDFWrapper = styled.div`
   margin: 0 auto;
   overflow-y: auto;
   min-height: 100vh;
-  padding-bottom: 100px;
+  padding: 2rem;
   
   .react-pdf__Document {
     display: flex;
@@ -47,15 +49,16 @@ const PDFWrapper = styled.div`
 
   .react-pdf__Page {
     margin-bottom: 1rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    min-height: ${props => props.doublePage ? '589px' : '786px'};
-    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    background: ${props => props.theme.mode === 'dark' ? '#2f2f2f' : 'white'};
   }
 `;
 
 const Controls = styled.div`
   position: fixed;
-  bottom: 2rem;
+  bottom: ${props => props.isRetracted ? '-80px' : '2rem'};
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -63,12 +66,25 @@ const Controls = styled.div`
   align-items: center;
   gap: 1rem;
   background: ${props => props.theme.secondaryBackground};
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 1rem 3rem 1rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   width: auto;
   min-width: 500px;
+  transition: bottom 0.3s ease-in-out;
+`;
+
+const TabIndicator = styled.div`
+  position: absolute;
+  top: ${props => props.isRetracted ? '-15px' : '-35px'};
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 4px;
+  background: ${props => props.theme.border};
+  border-radius: 2px;
+  cursor: pointer;
 `;
 
 const VideoPlayer = styled.video`
@@ -87,13 +103,20 @@ const PageInfo = styled.span`
 `;
 
 const StyledButton = styled.button`
-  padding: 0.5rem 1rem;
-  background: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
+  padding: 0.75rem 1.25rem;
+  background: ${props => props.theme.primary}20;
+  color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.primary};
+  border-radius: 8px;
   cursor: pointer;
-  width: 100px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 100px;
+
+  &:hover {
+    background: ${props => props.theme.primary};
+    color: white;
+  }
 
   &:disabled {
     opacity: 0.5;
@@ -169,6 +192,26 @@ const InfoDescription = styled.p`
   line-height: 1.6;
 `;
 
+const RetractButton = styled.button`
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: ${props => props.theme.text};
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
 const MediaViewer = () => {
   // Existing state and hooks
   const { mediaId } = useParams();
@@ -182,6 +225,7 @@ const MediaViewer = () => {
   const [doublePage, setDoublePage] = useState(false);
   const [zoom, setZoom] = useState(1.0);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isControlsRetracted, setIsControlsRetracted] = useState(false);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -310,6 +354,11 @@ const MediaViewer = () => {
     }
   };
 
+  const toggleControls = (e) => {
+    e.stopPropagation(); // Prevent event bubbling
+    setIsControlsRetracted(!isControlsRetracted);
+  };
+
   if (loading) return <Loading />;
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
   if (!media) return null;
@@ -320,10 +369,26 @@ const MediaViewer = () => {
         {media?.type === 'video' ? (
           <>
             <VideoPlayer controls src={mediaUrl} />
-            <Controls>
+            <Controls 
+              isRetracted={isControlsRetracted} 
+              onClick={toggleControls}
+              onMouseEnter={() => setIsControlsRetracted(false)}
+            >
+              <TabIndicator 
+                onClick={toggleControls}
+                isRetracted={isControlsRetracted}
+              />
               <FavoriteButton isFavorited={isFavorited} onClick={handleFavorite}>
                 {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
               </FavoriteButton>
+              <RetractButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsControlsRetracted(true);
+                }}
+              >
+                ▼
+              </RetractButton>
             </Controls>
           </>
         ) : (
@@ -342,7 +407,11 @@ const MediaViewer = () => {
                 )}
               </Document>
             </PDFWrapper>
-            <Controls>
+            <Controls isRetracted={isControlsRetracted}>
+              <TabIndicator 
+                isRetracted={isControlsRetracted}
+                onClick={() => setIsControlsRetracted(false)}
+              />
               <StyledButton 
                 onClick={() => handlePageChange(pageNumber - 1)}
                 disabled={pageNumber <= 1}
@@ -372,6 +441,14 @@ const MediaViewer = () => {
               <StyledButton onClick={loadBookmark}>
                 Load Bookmark
               </StyledButton>
+              <RetractButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsControlsRetracted(true);
+                }}
+              >
+                ▼
+              </RetractButton>
             </Controls>
           </>
         )}
