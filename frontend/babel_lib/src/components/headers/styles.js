@@ -11,7 +11,7 @@ export const HeaderWrapper = styled.header`
     `${props.theme.surfaceColor}95` : 
     props.theme.surfaceColor};
   backdrop-filter: ${props => props.isScrolled ? 'blur(12px)' : 'none'};
-  transform: translateY(${props => props.hide ? '-100%' : '0'});
+  transform: translateY(${props => (props.hide || props.isViewerRetracted) ? '-100%' : '0'});
   transition: all 0.3s ease, background-color 0.2s ease, border-color 0.2s ease;
   color: ${props => props.theme.text};
 `;

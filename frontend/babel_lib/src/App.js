@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider as CustomThemeProvider, useTheme } from './contexts/ThemeContext';
+import { ViewerProvider } from './contexts/ViewerContext';
 import AppRoutes from './routes/AppRoutes';
 import MainLayout from './components/layouts/MainLayout';
 
@@ -22,9 +23,11 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <CustomThemeProvider>
-          <ThemedApp />
-        </CustomThemeProvider>
+        <ViewerProvider>
+          <CustomThemeProvider>
+            <ThemedApp />
+          </CustomThemeProvider>
+        </ViewerProvider>
       </AuthProvider>
     </Router>
   );

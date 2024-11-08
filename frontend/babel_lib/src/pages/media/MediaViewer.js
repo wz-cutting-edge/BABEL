@@ -11,6 +11,7 @@ import { pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { useAuth } from '../../contexts/AuthContext';
+import { useViewer } from '../../contexts/ViewerContext';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -101,18 +102,19 @@ const MobileControlGroup = styled.div`
 
 const TabIndicator = styled.div`
   position: absolute;
-  top: ${props => props.isRetracted ? '36px' : '-24px'};
+  top: ${props => props.isRetracted ? '-24px' : '-24px'};
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
   height: 24px;
   background: ${props => props.theme.secondaryBackground};
-  border-radius: ${props => props.isRetracted ? '0 0 8px 8px' : '8px 8px 0 0'};
+  border-radius: 8px 8px 0 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: ${props => props.isRetracted ? '0 2px 10px rgba(0,0,0,0.1)' : '0 -2px 10px rgba(0,0,0,0.1)'};
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  z-index: 1001;
   
   &::after {
     content: '';
@@ -281,6 +283,7 @@ const MediaViewer = () => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isControlsRetracted, setIsControlsRetracted] = useState(false);
   const [infoRetracted, setInfoRetracted] = useState(false);
+  const { setIsViewerRetracted } = useViewer();
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -413,14 +416,16 @@ const MediaViewer = () => {
   };
 
   const toggleControls = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    setIsControlsRetracted(!isControlsRetracted);
+    e.stopPropagation();
+    setIsControlsRetracted(prev => !prev);
+    setIsViewerRetracted(prev => !prev);
   };
 
   const renderControls = () => (
     <Controls isRetracted={isControlsRetracted}>
       <TabIndicator 
-        onClick={() => setIsControlsRetracted(!isControlsRetracted)}
+        onClick={toggleControls}
+        isRetracted={isControlsRetracted}
       />
       <StyledButton 
         onClick={() => handlePageChange(pageNumber - 1)}
@@ -468,10 +473,10 @@ const MediaViewer = () => {
       if (Math.abs(diff) > 50) {
         if (diff > 0) {
           setIsControlsRetracted(true);
-          setInfoRetracted(true);
+          setIsViewerRetracted(true);
         } else {
           setIsControlsRetracted(false);
-          setInfoRetracted(false);
+          setIsViewerRetracted(false);
         }
       }
     };
@@ -496,9 +501,7 @@ const MediaViewer = () => {
           <>
             <VideoPlayer controls src={mediaUrl} />
             <Controls 
-              isRetracted={isControlsRetracted} 
-              onClick={toggleControls}
-              onMouseEnter={() => setIsControlsRetracted(false)}
+              isRetracted={isControlsRetracted}
             >
               <TabIndicator 
                 onClick={toggleControls}
@@ -542,7 +545,26 @@ const MediaViewer = () => {
                 )}
               </Document>
             </PDFWrapper>
-            {renderControls()}
+            <Controls 
+              isRetracted={isControlsRetracted}
+            >
+              <TabIndicator 
+                onClick={toggleControls}
+                isRetracted={isControlsRetracted}
+              />
+              <FavoriteButton isFavorited={isFavorited} onClick={handleFavorite}>
+                {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
+              </FavoriteButton>
+              <StyledButton onClick={loadBookmark}>
+                Load Bookmark
+              </StyledButton>
+              <StyledButton onClick={() => setZoom(zoom + 0.2)}>
+                +
+              </StyledButton>
+              <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))}>
+                -
+              </StyledButton>
+            </Controls>
           </>
         )}
       </MediaPanel>

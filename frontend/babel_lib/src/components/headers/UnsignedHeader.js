@@ -79,9 +79,6 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
           <ThemeToggleButton onClick={toggleTheme}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </ThemeToggleButton>
-          <IconButton>
-            <Search size={20} />
-          </IconButton>
           <Link to="/login">
             <IconButton>
               <LogIn size={16} />

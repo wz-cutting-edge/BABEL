@@ -23,6 +23,7 @@ import useScrollDirection from '../../hooks/useScrollDirection';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemeToggleButton } from './styles';
+import { useViewer } from '../../contexts/ViewerContext';
 
 const SignedHeader = ({ toggleTheme, isDarkMode }) => {
   const { user } = useAuth();
@@ -35,6 +36,7 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
   const [hasUnreadTickets, setHasUnreadTickets] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { isViewerRetracted } = useViewer();
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -148,7 +150,11 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
   }, [location.pathname]);
 
   return (
-    <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
+    <HeaderWrapper 
+      isScrolled={isScrolled} 
+      hide={scrollDirection === 'down'}
+      isViewerRetracted={isViewerRetracted}
+    >
       <Container>
         <NavGroup className="logo-group">
           <LogoLink to="/">
@@ -195,9 +201,6 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
           <ThemeToggleButton onClick={toggleTheme}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </ThemeToggleButton>
-          <IconButton>
-            <Search size={20} />
-          </IconButton>
           {renderSupportDropdown()}
           <Dropdown>
             <IconButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
