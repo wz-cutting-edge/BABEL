@@ -78,31 +78,11 @@ const Controls = styled.div`
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   z-index: 1000;
   transition: bottom 0.3s ease-in-out;
-  
-  @media (max-width: 768px) {
-    width: 90%;
-    padding: 0.75rem;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    background: ${props => props.theme.background};
-    border: 1px solid ${props => props.theme.border};
-  }
-`;
-
-const MobileControlGroup = styled.div`
-  display: none;
-  
-  @media (max-width: 768px) {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
 `;
 
 const TabIndicator = styled.div`
   position: absolute;
-  top: ${props => props.isRetracted ? '-24px' : '-24px'};
+  top: -48px;
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
@@ -115,18 +95,26 @@ const TabIndicator = styled.div`
   justify-content: center;
   box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
   z-index: 1001;
-  
+
   &::after {
     content: '';
     width: 30px;
     height: 4px;
     background: ${props => props.theme.border};
     border-radius: 2px;
+    transform: ${props => props.isRetracted ? 'rotate(180deg)' : 'rotate(0deg)'};
+    transition: transform 0.3s ease;
   }
+`;
+
+const MobileControlGroup = styled.div`
+  display: none;
   
   @media (max-width: 768px) {
-    width: 48px;
-    height: 20px;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 `;
 
@@ -498,10 +486,6 @@ const MediaViewer = () => {
             <Controls 
               isRetracted={isControlsRetracted}
             >
-              <TabIndicator 
-                onClick={toggleControls}
-                isRetracted={isControlsRetracted}
-              />
               <FavoriteButton isFavorited={isFavorited} onClick={handleFavorite}>
                 {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
               </FavoriteButton>
