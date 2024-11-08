@@ -63,6 +63,29 @@ const PDFWrapper = styled.div`
   }
 `;
 
+const StyledButton = styled.button`
+  padding: 0.75rem 1.25rem;
+  background: ${props => props.theme.primary}20;
+  color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.primary};
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 100px;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.75rem;
+    min-width: unset;
+  }
+`;
+
+const PageInfo = styled.span`
+  min-width: 100px;
+  text-align: center;
+  color: ${props => props.theme.text};
+`;
+
 const Controls = styled.div`
   position: fixed;
   bottom: ${props => props.isRetracted ? '-60px' : '2rem'};
@@ -78,6 +101,26 @@ const Controls = styled.div`
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   z-index: 1000;
   transition: bottom 0.3s ease-in-out;
+  
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 0.75rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    
+    ${StyledButton} {
+      flex: 1;
+      min-width: unset;
+      padding: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    ${PageInfo} {
+      min-width: unset;
+      flex: 2;
+    }
+  }
 `;
 
 const TabIndicator = styled.div`
@@ -131,31 +174,6 @@ const VideoPlayer = styled.video`
     width: 100%;
     height: auto;
     aspect-ratio: 16/9;
-  }
-`;
-
-const PageInfo = styled.span`
-  min-width: 100px;
-  text-align: center;
-  color: ${props => props.theme.text};
-`;
-
-const StyledButton = styled.button`
-  padding: 0.75rem 1.25rem;
-  background: ${props => props.theme.primary}20;
-  color: ${props => props.theme.primary};
-  border: 1px solid ${props => props.theme.primary};
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  min-width: 100px;
-
-  @media (max-width: 768px) {
-    padding: 0.5rem 0.75rem;
-    min-width: unset;
-    flex: 1;
-    font-size: 0.875rem;
   }
 `;
 
@@ -429,49 +447,22 @@ const MediaViewer = () => {
       >
         Next
       </StyledButton>
-      <StyledButton onClick={() => setZoom(zoom + 0.2)}>
-        +
-      </StyledButton>
-      <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))}>
-        -
-      </StyledButton>
+      {!isMobile && (
+        <>
+          <StyledButton onClick={() => setZoom(zoom + 0.2)}>
+            +
+          </StyledButton>
+          <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))}>
+            -
+          </StyledButton>
+        </>
+      )}
       <Divider />
       <StyledButton onClick={() => setIsViewerRetracted(prev => !prev)}>
         {isViewerRetracted ? 'Show Header' : 'Hide Header'}
       </StyledButton>
     </Controls>
   );
-
-  useEffect(() => {
-    let touchStartY = 0;
-    
-    const handleTouchStart = (e) => {
-      touchStartY = e.touches[0].clientY;
-    };
-    
-    const handleTouchMove = (e) => {
-      const touchEndY = e.touches[0].clientY;
-      const diff = touchEndY - touchStartY;
-      
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-          setIsControlsRetracted(true);
-          setIsViewerRetracted(true);
-        } else {
-          setIsControlsRetracted(false);
-          setIsViewerRetracted(false);
-        }
-      }
-    };
-    
-    document.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('touchmove', handleTouchMove);
-    
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, []);
 
   if (loading) return <Loading />;
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
