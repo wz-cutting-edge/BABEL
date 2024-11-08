@@ -66,8 +66,8 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isAuthenticated() && isNotBanned() && 
         request.resource.data.authorId == request.auth.uid;
-      allow update: if isAuthenticated() && isNotBanned() && (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount']) ||
+      allow update: if isAuthenticated() && (
+        (isNotBanned() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'commentCount'])) ||
         isAdmin()
       );
       allow delete: if isAdmin();

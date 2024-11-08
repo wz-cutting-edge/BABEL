@@ -8,6 +8,12 @@ const SearchWrapper = styled.div`
   background-color: ${props => props.theme.secondaryBackground};
   border-radius: 20px;
   padding: 0.5rem 1rem;
+  margin: 0 1rem;
+  
+  @media (max-width: 768px) {
+    margin: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
 `;
 
 const Input = styled.input`
@@ -17,6 +23,11 @@ const Input = styled.input`
   flex-grow: 1;
   font-size: 1rem;
   outline: none;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    font-size: 16px; // Prevents zoom on iOS
+  }
 
   &::placeholder {
     color: ${props => props.theme.text}aa;

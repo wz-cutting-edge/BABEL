@@ -6,7 +6,7 @@ import { Button } from '../components/common/common';
 import { 
   PageWrapper, 
   ContentContainer, 
-  Title, 
+  Title as BaseTitle,
   StyledButton, 
   OutlineButton,
   Input 
@@ -28,7 +28,7 @@ import { db } from '../services/firebase/config';
 const MainSection = styled.section`
   flex: 1;
   width: 100%;
-  padding: 3rem 1rem;
+  padding: 2rem 1rem;
   background: linear-gradient(
     135deg,
     ${props => props.theme.background} 0%,
@@ -40,22 +40,115 @@ const MainSection = styled.section`
   }
 `;
 
+const ContentWrapper = styled.div`
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const HomeTitle = styled(BaseTitle)`
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+  }
+`;
+
 const Description = styled.p`
   max-width: 700px;
   margin: 0 auto 2rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 1.125rem;
+  font-size: 1rem;
   line-height: 1.6;
   text-align: center;
+  padding: 0 1rem;
+  
+  @media (min-width: 768px) {
+    font-size: 1.125rem;
+    padding: 0;
+  }
 `;
 
 const SearchForm = styled.form`
   display: flex;
+  flex-direction: column;
   gap: 0.75rem;
   width: 100%;
   max-width: 32rem;
   margin: 1rem auto 2rem;
   position: relative;
+  padding: 0 1rem;
+  
+  @media (max-width: 768px) {
+    padding: 0 0.5rem;
+    gap: 0.5rem;
+  }
+`;
+
+const SearchInput = styled(Input)`
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  
+  @media (max-width: 768px) {
+    height: 44px;
+    font-size: 16px; // Prevents zoom on iOS
+  }
+`;
+
+const SearchResults = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 1rem;
+  right: 1rem;
+  background: ${props => props.theme.surfaceColor};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  box-shadow: ${props => props.theme.shadowLg};
+  margin-top: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 50;
+  display: ${props => (props.show ? 'block' : 'none')};
+  
+  @media (max-width: 768px) {
+    left: 0.5rem;
+    right: 0.5rem;
+    max-height: 300px;
+  }
+`;
+
+const ResultItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  cursor: pointer;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+`;
+
+const ResultInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const ResultTitle = styled.div`
+  font-weight: 500;
+  color: ${props => props.theme.text};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const ResultMeta = styled.div`
+  font-size: 0.875rem;
+  color: ${props => props.theme.textSecondary};
 `;
 
 const ButtonGroup = styled.div`
@@ -65,75 +158,22 @@ const ButtonGroup = styled.div`
   width: 100%;
   max-width: 24rem;
   margin: 0 auto;
+  padding: 0 1rem;
   
-  @media (min-width: 400px) {
+  @media (min-width: 480px) {
     flex-direction: row;
     justify-content: center;
+    padding: 0;
   }
-`;
-
-// Add the missing ContentWrapper component
-const ContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 2rem;
-`;
-
-// Add the missing SearchInput component
-const SearchInput = styled(Input)`
-  flex: 1;
-  min-width: 0; // Prevents flex item from overflowing
-`;
-
-// Add new styled components for search results
-const SearchResults = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: ${props => props.theme.surfaceColor};
-  border-radius: 8px;
-  max-height: 400px;
-  overflow-y: auto;
-  box-shadow: ${props => props.theme.shadowMd};
-  z-index: 10;
-  margin-top: 0.5rem;
-  display: ${props => props.show ? 'block' : 'none'};
-  border: 1px solid ${props => props.theme.borderLight};
-`;
-
-const ResultItem = styled.div`
-  padding: 1rem;
-  border-bottom: 1px solid ${props => props.theme.border};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-
-  &:hover {
-    background: ${props => props.theme.background};
+  
+  ${StyledButton}, ${OutlineButton} {
+    flex: 1;
+    
+    @media (min-width: 480px) {
+      flex: 0 1 auto;
+      min-width: 140px;
+    }
   }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const ResultInfo = styled.div`
-  flex: 1;
-`;
-
-const ResultTitle = styled.h4`
-  margin: 0 0 0.25rem 0;
-  color: ${props => props.theme.text};
-`;
-
-const ResultMeta = styled.p`
-  margin: 0;
-  font-size: 0.875rem;
-  color: ${props => props.theme.textSecondary};
 `;
 
 const Home = () => {
@@ -205,7 +245,7 @@ const Home = () => {
       <MainSection>
         <ContentContainer>
           <ContentWrapper>
-            <Title>Welcome to BABEL</Title>
+            <HomeTitle>Welcome to BABEL</HomeTitle>
             <Description>
               BABEL is a digital library archive and social platform for books, textbooks,
               movies, videos, and more. Join our community to discover, share, and discuss your favorite content.

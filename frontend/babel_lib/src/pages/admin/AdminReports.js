@@ -10,6 +10,10 @@ const PageWrapper = styled.div`
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const ReportsGrid = styled.div`
@@ -17,6 +21,12 @@ const ReportsGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
 `;
 
 const ReportCard = styled.div`
@@ -24,6 +34,16 @@ const ReportCard = styled.div`
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    font-size: 0.875rem;
+    
+    h3 {
+      font-size: 1rem;
+      margin-top: 0;
+    }
+  }
 `;
 
 const StatusBadge = styled.span`
@@ -50,6 +70,16 @@ const ActionButton = styled.button`
   padding: 0.5rem;
   cursor: pointer;
   color: ${props => props.color || props.theme.text};
+  
+  @media (max-width: 768px) {
+    padding: 0.375rem;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
   &:hover {
     opacity: 0.8;
   }

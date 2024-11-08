@@ -79,22 +79,35 @@ const ReportDetails = ({ report, reportedContent, onResolve, onDelete }) => {
         <div>
           <strong>{report.contentType}</strong> reported by {report.reporterId}
         </div>
-        <StatusBadge status={report.status}>{report.status}</StatusBadge>
+        <StatusBadge 
+          status={report.status} 
+          contentDeleted={report.contentDeleted}
+        >
+          {report.contentDeleted ? 'Content Deleted' : report.status}
+        </StatusBadge>
       </Header>
 
       <Content isExpanded={isExpanded}>
         <Section>
           <h4>Reported Content</h4>
           <ReportedContent>
-            <p>{report.contentType === 'post' ? 'Post' : 'Comment'}: {reportedContent?.content}</p>
-            {reportedContent?.imageUrl && (
-              <PostImage src={reportedContent.imageUrl} alt="Reported content" />
+            {report.contentDeleted ? (
+              <p><em>This content has been deleted</em></p>
+            ) : (
+              <>
+                <p>{report.contentType === 'post' ? 'Post' : 'Comment'}: {reportedContent?.content}</p>
+                {reportedContent?.imageUrl && (
+                  <PostImage src={reportedContent.imageUrl} alt="Reported content" />
+                )}
+              </>
             )}
             <p><strong>Created At:</strong> {new Date(reportedContent?.createdAt?.toDate()).toLocaleString()}</p>
             <p><strong>Reason:</strong> {report.reason}</p>
-            <DeleteButton onClick={() => onDelete(report)} variant="danger">
-              <Trash2 size={16} /> Delete Content
-            </DeleteButton>
+            {!report.contentDeleted && (
+              <DeleteButton onClick={() => onDelete(report)} variant="danger">
+                <Trash2 size={16} /> Delete Content
+              </DeleteButton>
+            )}
           </ReportedContent>
         </Section>
 

@@ -16,6 +16,14 @@ const PostWrapper = styled.div`
   box-shadow: ${props => props.theme.shadowSm};
   transition: all 0.2s ease;
   width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 0 0.5rem;
+    width: calc(100% - 1rem);
+  }
   
   * {
     color: ${props => props.theme.text};
@@ -81,10 +89,12 @@ const PostImage = styled.img`
 const ActionBar = styled.div`
   display: flex;
   gap: 1rem;
-  padding: 0.75rem 0;
+  padding-top: 0.5rem;
   border-top: 1px solid ${props => props.theme.borderLight};
-  border-bottom: 1px solid ${props => props.theme.borderLight};
-  margin: 1rem 0;
+  
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+  }
 `;
 
 const ActionButton = styled.button`
@@ -125,15 +135,31 @@ const OptionsButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${props => props.theme.textSecondary};
+  color: ${props => props.theme.primary};
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: ${props => props.theme.primaryAlpha};
+  }
+  
+  &:active {
+    background: ${props => props.theme.primaryAlpha}40;
+  }
 `;
 
 const PostContent = styled.div`
-  color: ${props => props.theme.text};
+  font-size: 0.95rem;
   line-height: 1.5;
-  margin: 1rem 0;
+  margin-bottom: 1rem;
   white-space: pre-wrap;
-  font-size: 1rem;
+  word-break: break-word;
+  
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    padding: 0;
+  }
 `;
 
 const TimeStamp = styled.div`

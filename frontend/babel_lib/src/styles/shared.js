@@ -28,6 +28,12 @@ export const ContentContainer = styled.div`
   position: relative;
   z-index: 2;
   
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 0 1rem;
+    border-radius: 12px;
+  }
+  
   &:hover {
     box-shadow: ${props => props.theme.shadowLg};
     transform: translateY(-2px);
@@ -41,8 +47,13 @@ export const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  color: ${props => props.theme.text}; // This ensures the text color matches the theme
+  color: ${props => props.theme.text};
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    text-align: center;
+  }
 `;
 
 export const Subtitle = styled.h2`

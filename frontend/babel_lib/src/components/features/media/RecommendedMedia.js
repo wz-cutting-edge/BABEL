@@ -1,72 +1,117 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, limit, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '../../../services/firebase/config';
-import VerticalCarousel from './VerticalCarousel';
 import styled from 'styled-components';
-
-const Layout = styled.div`
-  position: relative;
-  min-height: calc(100vh - 64px);
-`;
-
-const ContentGrid = styled.div`
-  max-width: 1600px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 320px 1fr 320px;
-  gap: 2rem;
-  position: relative;
-`;
-
-const ScrollableArea = styled.div`
-  padding: 2rem 0;
-`;
+import { ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import MediaItem from './MediaItem';
 
 const CarouselContainer = styled.div`
   position: fixed;
-  ${props => props.side === 'left' ? 'left: 0' : 'right: 0'};
-  top: 0;
-  height: 100vh;
-  width: 320px;
-  background: ${props => props.theme.secondaryBackground};
-  transform: translateX(${props => 
-    props.isRetracted 
-      ? (props.side === 'left' ? '-320px' : '320px') 
-      : '0'
-  });
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: ${props => props.theme.background};
+  transform: translateY(${props => props.isRetracted ? 'calc(100% - 24px)' : '0'});
   transition: transform 0.3s ease-in-out;
-  padding-top: 0.5rem;
-  box-shadow: ${props => 
-    props.side === 'left' 
-      ? '2px 0 10px rgba(0,0,0,0.1)' 
-      : '-2px 0 10px rgba(0,0,0,0.1)'
-  };
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+  
+  @media (max-width: 768px) {
+    transform: translateY(${props => props.isRetracted ? 'calc(100% - 20px)' : '0'});
+  }
 `;
 
 const RetractTab = styled.div`
   position: absolute;
-  ${props => props.side === 'left' ? 'right: -20px' : 'left: -20px'};
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 60px;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 24px;
   background: ${props => props.theme.secondaryBackground};
-  border-radius: ${props => props.side === 'left' ? '0 8px 8px 0' : '8px 0 0 8px'};
+  border-radius: 8px 8px 0 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: ${props => props.theme.shadowMd};
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 
-  &:hover {
-    background: ${props => props.theme.primary}20;
+  svg {
+    transition: transform 0.3s ease;
+    transform: rotate(${props => props.isRetracted ? '180deg' : '0deg'});
+  }
+  
+  @media (max-width: 768px) {
+    width: 48px;
+    height: 20px;
+    top: -20px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 `;
 
-const ContentWrapper = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+const CarouselContent = styled.div`
+  padding: 1rem 3rem;
+  height: 280px;
+  position: relative;
+  background-color: ${props => props.theme.background};
+  
+  @media (max-width: 768px) {
+    height: 220px;
+    padding: 0.75rem 2.5rem;
+  }
+`;
+
+const CarouselTrack = styled.div`
+  display: flex;
+  transition: transform 0.5s ease;
+  transform: translateX(${props => props.offset}px);
+`;
+
+const NavigationButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  ${props => props.direction === 'left' ? 'left: 1rem;' : 'right: 1rem;'}
+  
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+const MediaItemWrapper = styled.div`
+  flex: 0 0 280px;
+  padding: 0 0.5rem;
+  
+  @media (max-width: 768px) {
+    flex: 0 0 240px;
+  }
+`;
+
+const SectionTitle = styled.h3`
+  margin: 0 0 0.75rem 1rem;
+  color: ${props => props.theme.text};
+  font-size: 1rem;
+  
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem 0.75rem;
+  }
 `;
 
 const getTagFrequency = (favorites) => {
@@ -154,16 +199,14 @@ const getRecommendedMedia = async (mediaType, frequentTags, frequentGenres) => {
 };
 
 const RecommendedMedia = ({ userId }) => {
-  const [books, setBooks] = useState([]);
-  const [videos, setVideos] = useState([]);
+  const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [leftCarouselRetracted, setLeftCarouselRetracted] = useState(false);
-  const [rightCarouselRetracted, setRightCarouselRetracted] = useState(false);
+  const [isRetracted, setIsRetracted] = useState(true);
+  const [offset, setOffset] = useState(0);
 
   useEffect(() => {
     if (!userId) {
-      setBooks([]);
-      setVideos([]);
+      setMedia([]);
       setLoading(false);
       return;
     }
@@ -198,8 +241,7 @@ const RecommendedMedia = ({ userId }) => {
         ]);
 
         if (isSubscribed) {
-          setBooks(recommendedBooks);
-          setVideos(recommendedVideos);
+          setMedia([...recommendedBooks, ...recommendedVideos]);
         }
       } catch (error) {
         console.error('Error fetching recommendations:', error);
@@ -213,35 +255,56 @@ const RecommendedMedia = ({ userId }) => {
     return () => {
       isSubscribed = false;
       unsubscribe();
-      setBooks([]);
-      setVideos([]);
+      setMedia([]);
     };
   }, [userId]);
 
-  return (
-    <Layout>
-      <ContentGrid>
-        <CarouselContainer isRetracted={leftCarouselRetracted} side="left">
-          <RetractTab 
-            side="left"
-            onClick={() => setLeftCarouselRetracted(!leftCarouselRetracted)}
-          >
-            {leftCarouselRetracted ? '►' : '◄'}
-          </RetractTab>
-          <VerticalCarousel items={books} type="book" />
-        </CarouselContainer>
+  const handlePrevious = () => {
+    setOffset(Math.min(offset + 280, 0));
+  };
 
-        <CarouselContainer isRetracted={rightCarouselRetracted} side="right">
-          <RetractTab 
-            side="right"
-            onClick={() => setRightCarouselRetracted(!rightCarouselRetracted)}
-          >
-            {rightCarouselRetracted ? '◄' : '►'}
-          </RetractTab>
-          <VerticalCarousel items={videos} type="video" />
-        </CarouselContainer>
-      </ContentGrid>
-    </Layout>
+  const handleNext = () => {
+    const maxOffset = -(media.length * 280 - window.innerWidth + 100);
+    setOffset(Math.max(offset - 280, maxOffset));
+  };
+
+  if (loading || media.length === 0) return null;
+
+  return (
+    <CarouselContainer isRetracted={isRetracted}>
+      <RetractTab 
+        onClick={() => setIsRetracted(!isRetracted)}
+        isRetracted={isRetracted}
+      >
+        <ChevronUp size={20} />
+      </RetractTab>
+      <CarouselContent>
+        <SectionTitle>Recommended for you</SectionTitle>
+        {offset < 0 && (
+          <NavigationButton direction="left" onClick={handlePrevious}>
+            <ChevronLeft size={20} />
+          </NavigationButton>
+        )}
+        <CarouselTrack offset={offset}>
+          {media.map(item => (
+            <MediaItemWrapper key={item.id}>
+              <MediaItem 
+                id={item.id}
+                type={item.type}
+                title={item.title}
+                author={item.author}
+                coverUrl={item.coverUrl || item.thumbnailUrl}
+              />
+            </MediaItemWrapper>
+          ))}
+        </CarouselTrack>
+        {offset > -(media.length * 280 - window.innerWidth + 100) && (
+          <NavigationButton direction="right" onClick={handleNext}>
+            <ChevronRight size={20} />
+          </NavigationButton>
+        )}
+      </CarouselContent>
+    </CarouselContainer>
   );
 };
 

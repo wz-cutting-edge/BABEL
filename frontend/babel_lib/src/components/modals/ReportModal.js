@@ -24,6 +24,28 @@ const ModalContent = styled.div`
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
+  position: relative;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${props => props.theme.textSecondary};
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.theme.backgroundAlt};
+    color: ${props => props.theme.text};
+  }
 `;
 
 const ReportForm = styled.form`
@@ -42,15 +64,42 @@ const TextArea = styled.textarea`
   color: ${props => props.theme.text};
 `;
 
+const SubmitButton = styled.button`
+  background: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.theme.primaryHover};
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
 const ReportModal = ({ isOpen, onClose, contentId, contentType, reportedUserId }) => {
   const [reason, setReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     if (!contentId || !contentType || !reportedUserId || !user) {
       console.error('Missing required fields:', { contentId, contentType, reportedUserId, userId: user?.uid });
+      setIsSubmitting(false);
       return;
     }
     
@@ -66,25 +115,38 @@ const ReportModal = ({ isOpen, onClose, contentId, contentType, reportedUserId }
       });
       
       onClose();
+      setReason('');
     } catch (error) {
       console.error('Error submitting report:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={e => e.stopPropagation()}>
-        <h3>Report {contentType}</h3>
+    <ModalOverlay 
+      style={{ display: isOpen ? 'flex' : 'none' }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <ModalContent>
+        <CloseButton onClick={onClose}>
+          <X size={20} />
+        </CloseButton>
+        <h3>Report Content</h3>
         <ReportForm onSubmit={handleSubmit}>
           <TextArea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Why are you reporting this content?"
+            placeholder="Please describe why you are reporting this content..."
             required
           />
-          <button type="submit">Submit Report</button>
+          <SubmitButton type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Report'}
+          </SubmitButton>
         </ReportForm>
       </ModalContent>
     </ModalOverlay>

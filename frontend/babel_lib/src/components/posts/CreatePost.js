@@ -25,13 +25,14 @@ const CreatePostWrapper = styled.div`
   padding: 1.5rem;
   margin: 0 auto 1.5rem;
   box-shadow: ${props => props.theme.shadowMd};
-  transition: all 0.2s ease;
   width: 100%;
   box-sizing: border-box;
-
-  &:hover {
-    box-shadow: ${props => props.theme.shadowLg};
-    transform: translateY(-2px);
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 0 0.5rem 1rem;
+    width: calc(100% - 1rem);
   }
 `;
 
@@ -39,6 +40,7 @@ const PostForm = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  width: 100%;
 `;
 
 const TextArea = styled.textarea`
@@ -52,16 +54,12 @@ const TextArea = styled.textarea`
   font-size: 0.875rem;
   resize: vertical;
   box-sizing: border-box;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
+  
+  @media (max-width: 768px) {
+    min-height: 80px;
+    padding: 0.75rem;
+    font-size: 16px;
+    width: 100%;
   }
 `;
 

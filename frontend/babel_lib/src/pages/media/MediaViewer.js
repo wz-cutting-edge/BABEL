@@ -35,24 +35,30 @@ const PDFWrapper = styled.div`
   width: 100%;
   max-width: ${props => props.doublePage ? '1120px' : '840px'};
   margin: 0 auto;
-  overflow-y: auto;
-  min-height: 100vh;
-  padding: 2rem;
+  display: flex;
+  justify-content: center;
   
   .react-pdf__Document {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 24px;
+    flex-direction: column;
+    align-items: center;
   }
-
+  
   .react-pdf__Page {
+    max-width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-    background: ${props => props.theme.mode === 'dark' ? '#2f2f2f' : 'white'};
+    
+    canvas {
+      max-width: 100%;
+      height: auto !important;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0;
+    max-width: 100%;
+    overflow: visible;
   }
 `;
 
@@ -66,25 +72,60 @@ const Controls = styled.div`
   align-items: center;
   gap: 1rem;
   background: ${props => props.theme.secondaryBackground};
-  padding: 1rem 3rem 1rem 1rem;
+  padding: 1rem;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   z-index: 1000;
-  width: auto;
-  min-width: 500px;
   transition: bottom 0.3s ease-in-out;
+  
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 0.75rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    background: ${props => props.theme.background};
+    border: 1px solid ${props => props.theme.border};
+  }
+`;
+
+const MobileControlGroup = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
 `;
 
 const TabIndicator = styled.div`
   position: absolute;
-  top: ${props => props.isRetracted ? '-15px' : '-35px'};
+  top: -24px;
   left: 50%;
   transform: translateX(-50%);
-  width: 30px;
-  height: 4px;
-  background: ${props => props.theme.border};
-  border-radius: 2px;
+  width: 60px;
+  height: 24px;
+  background: ${props => props.theme.secondaryBackground};
+  border-radius: 8px 8px 0 0;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  
+  &::after {
+    content: '';
+    width: 30px;
+    height: 4px;
+    background: ${props => props.theme.border};
+    border-radius: 2px;
+  }
+  
+  @media (max-width: 768px) {
+    width: 48px;
+    height: 20px;
+  }
 `;
 
 const VideoPlayer = styled.video`
@@ -94,6 +135,13 @@ const VideoPlayer = styled.video`
   height: auto;
   display: block;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    max-height: unset;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+  }
 `;
 
 const PageInfo = styled.span`
@@ -113,14 +161,11 @@ const StyledButton = styled.button`
   transition: all 0.2s ease;
   min-width: 100px;
 
-  &:hover {
-    background: ${props => props.theme.primary};
-    color: white;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  @media (max-width: 768px) {
+    padding: 0.5rem 0.75rem;
+    min-width: unset;
+    flex: 1;
+    font-size: 0.875rem;
   }
 `;
 
@@ -149,26 +194,38 @@ const ViewerLayout = styled.div`
   margin: 0 auto;
   padding: 6rem 2rem 2rem;
   height: 100vh;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+    height: auto;
+    overflow: visible;
+  }
 `;
 
 const MediaPanel = styled.div`
   display: flex;
   justify-content: center;
-  align-items: ${props => props.isVideo ? 'flex-start' : 'center'};
-  overflow: hidden;
-  background: ${props => props.theme.background};
-  border-radius: 8px;
-  padding: 2rem;
-  padding-top: ${props => props.isVideo ? '2rem' : '8rem'};
+  align-items: center;
+  width: 100%;
+  background: none;
+  padding: 0;
+  
+  @media (max-width: 768px) {
+    padding: 0;
+    overflow: visible;
+  }
 `;
 
 const InfoPanel = styled.div`
+  padding: 1rem;
   background: ${props => props.theme.secondaryBackground};
-  padding: 1.5rem;
   border-radius: 8px;
-  height: fit-content;
-  position: sticky;
-  top: 2rem;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 5rem;
+  }
 `;
 
 const MediaInfo = styled.div`
@@ -192,23 +249,20 @@ const InfoDescription = styled.p`
   line-height: 1.6;
 `;
 
-const RetractButton = styled.button`
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  padding: 0.5rem;
+const ButtonGroup = styled.div`
   display: flex;
-  align-items: center;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    
+    > button {
+      flex: 1;
+      min-width: 150px;
+    }
   }
 `;
 
@@ -226,6 +280,7 @@ const MediaViewer = () => {
   const [zoom, setZoom] = useState(1.0);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isControlsRetracted, setIsControlsRetracted] = useState(false);
+  const [infoRetracted, setInfoRetracted] = useState(false);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -304,16 +359,19 @@ const MediaViewer = () => {
     }
   };
 
+  const isMobile = window.innerWidth <= 768;
+
   const handlePageChange = async (newPage) => {
-    // Check if the new page is within valid range
     if (newPage < 1 || newPage > numPages) return;
 
-    // For double page mode, ensure we don't exceed the last valid page pair
-    if (doublePage) {
+    if (isMobile && doublePage) {
+      setDoublePage(false);
+    }
+
+    if (doublePage && !isMobile) {
       if (newPage >= numPages) {
         newPage = numPages - 1;
       }
-      // Ensure we land on odd-numbered pages in double page mode
       if (newPage > 1) {
         newPage = newPage % 2 === 0 ? newPage - 1 : newPage;
       }
@@ -359,6 +417,74 @@ const MediaViewer = () => {
     setIsControlsRetracted(!isControlsRetracted);
   };
 
+  const renderControls = () => (
+    <Controls isRetracted={isControlsRetracted}>
+      <TabIndicator 
+        onClick={() => setIsControlsRetracted(!isControlsRetracted)}
+      />
+      <StyledButton 
+        onClick={() => handlePageChange(pageNumber - 1)}
+        disabled={pageNumber <= 1}
+      >
+        Prev
+      </StyledButton>
+      <PageInfo>
+        {pageNumber}/{numPages}
+      </PageInfo>
+      <StyledButton 
+        onClick={() => handlePageChange(pageNumber + (doublePage && !isMobile ? 2 : 1))}
+        disabled={doublePage ? pageNumber >= (numPages - 1) : pageNumber >= numPages}
+      >
+        Next
+      </StyledButton>
+      {!isMobile && (
+        <>
+          <Divider />
+          <StyledButton onClick={() => setDoublePage(!doublePage)}>
+            {doublePage ? '1 Page' : '2 Page'}
+          </StyledButton>
+        </>
+      )}
+      <StyledButton onClick={() => setZoom(zoom + 0.2)}>
+        +
+      </StyledButton>
+      <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))}>
+        -
+      </StyledButton>
+    </Controls>
+  );
+
+  useEffect(() => {
+    let touchStartY = 0;
+    
+    const handleTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    
+    const handleTouchMove = (e) => {
+      const touchEndY = e.touches[0].clientY;
+      const diff = touchEndY - touchStartY;
+      
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          setIsControlsRetracted(true);
+          setInfoRetracted(true);
+        } else {
+          setIsControlsRetracted(false);
+          setInfoRetracted(false);
+        }
+      }
+    };
+    
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchmove', handleTouchMove);
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
+
   if (loading) return <Loading />;
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
   if (!media) return null;
@@ -381,14 +507,6 @@ const MediaViewer = () => {
               <FavoriteButton isFavorited={isFavorited} onClick={handleFavorite}>
                 {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
               </FavoriteButton>
-              <RetractButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsControlsRetracted(true);
-                }}
-              >
-                ▼
-              </RetractButton>
             </Controls>
           </>
         ) : (
@@ -396,60 +514,35 @@ const MediaViewer = () => {
             <PDFWrapper doublePage={doublePage}>
               <Document file={mediaUrl} onLoadSuccess={onDocumentLoadSuccess}>
                 {doublePage ? (
-                  <div style={{ display: 'flex', gap: '24px' }}>
-                    <Page pageNumber={pageNumber} scale={zoom} />
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '24px',
+                    justifyContent: 'center',
+                    maxWidth: '100%'
+                  }}>
+                    <Page 
+                      pageNumber={pageNumber} 
+                      scale={zoom}
+                      width={window.innerWidth > 768 ? undefined : window.innerWidth - 32}
+                    />
                     {pageNumber + 1 <= numPages && (
-                      <Page pageNumber={pageNumber + 1} scale={zoom} />
+                      <Page 
+                        pageNumber={pageNumber + 1} 
+                        scale={zoom}
+                        width={window.innerWidth > 768 ? undefined : window.innerWidth - 32}
+                      />
                     )}
                   </div>
                 ) : (
-                  <Page pageNumber={pageNumber} scale={zoom} />
+                  <Page 
+                    pageNumber={pageNumber} 
+                    scale={zoom}
+                    width={window.innerWidth > 768 ? undefined : window.innerWidth - 32}
+                  />
                 )}
               </Document>
             </PDFWrapper>
-            <Controls isRetracted={isControlsRetracted}>
-              <TabIndicator 
-                isRetracted={isControlsRetracted}
-                onClick={() => setIsControlsRetracted(false)}
-              />
-              <StyledButton 
-                onClick={() => handlePageChange(pageNumber - 1)}
-                disabled={pageNumber <= 1}
-              >
-                Previous
-              </StyledButton>
-              <PageInfo>
-                Page {pageNumber} of {numPages}
-              </PageInfo>
-              <StyledButton 
-                onClick={() => handlePageChange(pageNumber + (doublePage ? 2 : 1))}
-                disabled={doublePage ? pageNumber >= (numPages - 1) : pageNumber >= numPages}
-              >
-                Next
-              </StyledButton>
-              <Divider />
-              <StyledButton onClick={() => setZoom(zoom + 0.2)} title="Zoom In">
-                Zoom In
-              </StyledButton>
-              <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))} title="Zoom Out">
-                Zoom Out
-              </StyledButton>
-              <Divider />
-              <StyledButton onClick={() => setDoublePage(!doublePage)}>
-                {doublePage ? 'Single Page' : 'Double Page'}
-              </StyledButton>
-              <StyledButton onClick={loadBookmark}>
-                Load Bookmark
-              </StyledButton>
-              <RetractButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsControlsRetracted(true);
-                }}
-              >
-                ▼
-              </RetractButton>
-            </Controls>
+            {renderControls()}
           </>
         )}
       </MediaPanel>
@@ -465,9 +558,14 @@ const MediaViewer = () => {
           {media.description && (
             <InfoDescription>{media.description}</InfoDescription>
           )}
-          <FavoriteButton isFavorited={isFavorited} onClick={handleFavorite}>
-            {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
-          </FavoriteButton>
+          <ButtonGroup>
+            <FavoriteButton isFavorited={isFavorited} onClick={handleFavorite}>
+              {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
+            </FavoriteButton>
+            <StyledButton onClick={loadBookmark}>
+              Load Bookmark
+            </StyledButton>
+          </ButtonGroup>
         </MediaInfo>
       </InfoPanel>
     </ViewerLayout>

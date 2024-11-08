@@ -10,13 +10,15 @@ import { AlertTriangle, Search, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ForumsWrapper = styled.div`
-  padding: 4rem 2rem 2rem;
+  padding: 4rem 1rem 1rem;
   max-width: 800px;
   margin: 0 auto;
+  overflow-x: hidden;
+  width: 100%;
   
-  h2 {
-    color: ${props => props.theme.text};
-    margin-bottom: 2rem;
+  @media (max-width: 768px) {
+    padding: 3rem 0 0.5rem;
+    margin: 0;
   }
 `;
 
@@ -25,6 +27,12 @@ const PostsList = styled.div`
   flex-direction: column;
   gap: 1rem;
   margin-top: 2rem;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
 `;
 
 const AdminBanner = styled.div`
@@ -36,23 +44,55 @@ const AdminBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    margin: 0 0.5rem 1rem;
+  }
 `;
 
 const SearchContainer = styled.div`
-  margin: 1rem 0;
+  margin: 1rem auto;
   position: relative;
   max-width: 400px;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    margin: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: ${props => props.theme.background};
+    padding: 0.5rem 1rem;
+    width: 100%;
+  }
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${props => props.theme.textSecondary};
+  cursor: pointer;
+  padding: 0.5rem;
+  
+  @media (max-width: 768px) {
+    right: 1.25rem;
+  }
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  padding: 0.75rem 1rem;
   border: 1px solid ${props => props.theme.borderLight};
   border-radius: 8px;
   background: ${props => props.theme.surfaceColor};
   color: ${props => props.theme.text};
   font-size: 0.875rem;
   transition: all 0.2s ease;
+  -webkit-appearance: none;
 
   &:focus {
     outline: none;
@@ -63,14 +103,13 @@ const SearchInput = styled.input`
   &::placeholder {
     color: ${props => props.theme.textSecondary};
   }
-`;
 
-const SearchIcon = styled.div`
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${props => props.theme.textSecondary};
+  @media (max-width: 768px) {
+    font-size: 16px;
+    padding: 0.625rem 1rem;
+    border-radius: 20px;
+    background: ${props => props.theme.backgroundAlt};
+  }
 `;
 
 const SearchResults = styled.div`
@@ -86,6 +125,31 @@ const SearchResults = styled.div`
   overflow-y: auto;
   z-index: 1000;
   box-shadow: ${props => props.theme.shadowMd};
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    max-height: 75vh;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    box-shadow: ${props => props.theme.shadowLg};
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 4px;
+      background: ${props => props.theme.borderLight};
+      border-radius: 2px;
+    }
+  }
 `;
 
 const UserResult = styled.div`
@@ -97,31 +161,29 @@ const UserResult = styled.div`
   transition: all 0.2s ease;
   border-bottom: 1px solid ${props => props.theme.borderLight};
 
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: ${props => props.theme.backgroundAlt};
-  }
-
-  img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-
-  strong {
-    color: ${props => props.theme.text};
-    font-weight: 600;
-    display: block;
-    margin-bottom: 0.25rem;
-  }
-
-  div {
-    color: ${props => props.theme.textSecondary};
-    font-size: 0.875rem;
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 0.75rem;
+    
+    img {
+      width: 48px;
+      height: 48px;
+    }
+    
+    strong {
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+    
+    div {
+      font-size: 0.875rem;
+      color: ${props => props.theme.textSecondary};
+    }
+    
+    &:active {
+      background: ${props => props.theme.backgroundAlt};
+    }
   }
 `;
 

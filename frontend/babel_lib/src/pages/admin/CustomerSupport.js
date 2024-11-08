@@ -10,6 +10,10 @@ const PageWrapper = styled.div`
   padding: 6rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 4rem 1rem 1rem;
+  }
 `;
 
 const SupportGrid = styled.div`
@@ -17,12 +21,22 @@ const SupportGrid = styled.div`
   grid-template-columns: 300px 1fr;
   gap: 2rem;
   height: calc(100vh - 200px);
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 1rem;
+  }
 `;
 
 const TicketList = styled.div`
   border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    max-height: 300px;
+  }
 `;
 
 const TicketItem = styled.div`
@@ -51,26 +65,46 @@ const ChatHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    
+    h3 {
+      font-size: 1rem;
+    }
+    
+    button {
+      padding: 0.5rem;
+      font-size: 0.875rem;
+    }
+  }
 `;
 
 const ChatMessages = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    max-height: calc(100vh - 400px);
+  }
 `;
 
 const Message = styled.div`
   margin-bottom: 1rem;
   padding: 0.75rem;
   border-radius: 8px;
-  max-width: 70%;
-  ${props => props.isAdmin ? `
-    background-color: ${props.theme.primary}20;
-    margin-left: auto;
-  ` : `
-    background-color: ${props.theme.secondaryBackground};
-    margin-right: auto;
-  `}
+  max-width: 85%;
+  word-break: break-word;
+  
+  @media (max-width: 768px) {
+    max-width: 90%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
 `;
 
 const ReplyBox = styled.div`

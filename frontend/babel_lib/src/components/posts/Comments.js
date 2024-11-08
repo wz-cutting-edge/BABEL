@@ -9,6 +9,10 @@ import ReportModal from '../modals/ReportModal';
 
 const CommentWrapper = styled.div`
   padding: 1rem 0;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 0;
+  }
 `;
 
 const CommentForm = styled.form`
@@ -36,12 +40,22 @@ const CommentInput = styled.input`
   &::placeholder {
     color: ${props => props.theme.textSecondary};
   }
+
+  @media (max-width: 768px) {
+    padding: 0.625rem;
+    font-size: 16px; // Prevents zoom on iOS
+  }
 `;
 
 const CommentItem = styled.div`
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
 `;
 
 const CommentAvatar = styled.img`

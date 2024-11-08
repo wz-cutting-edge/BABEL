@@ -16,18 +16,35 @@ const UploaderWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 4rem 1rem 1rem;
+    gap: 1.5rem;
+  }
 
   h2 {
     color: ${props => props.theme.text};
     font-size: 2rem;
     text-align: center;
     margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
   }
 
   h3 {
     color: ${props => props.theme.text};
     font-size: 1.25rem;
     margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
   }
 `;
 
@@ -39,28 +56,33 @@ const DropZone = styled.div`
   cursor: pointer;
   margin-bottom: 1rem;
   width: 100%;
+  max-width: 100%;
   background: ${props => props.theme.secondaryBackground};
   transition: all 0.2s ease;
+  box-sizing: border-box;
   
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background: ${props => props.theme.background};
-  }
-
-  p {
-    color: ${props => props.theme.text};
-    margin: 1rem 0;
-  }
-
-  small {
-    color: ${props => props.theme.textSecondary};
-    display: block;
-    margin-top: 0.5rem;
-  }
-
-  svg {
-    color: ${props => props.theme.primary};
-    margin-bottom: 1rem;
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem;
+    width: 100%;
+    margin: 0 auto;
+    
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+    
+    p {
+      font-size: 0.875rem;
+      margin: 0.5rem 0;
+      word-wrap: break-word;
+    }
+    
+    small {
+      font-size: 0.75rem;
+      display: block;
+      width: 100%;
+      word-wrap: break-word;
+    }
   }
 `;
 
@@ -74,6 +96,14 @@ const Form = styled.form`
   border-radius: 12px;
   border: 1px solid ${props => props.theme.borderLight};
   box-shadow: ${props => props.theme.shadowMd};
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 1rem;
+    width: calc(100% - 2rem);
+    margin: 0 auto;
+  }
 `;
 
 const Input = styled.input`
@@ -84,6 +114,15 @@ const Input = styled.input`
   color: ${props => props.theme.text};
   font-size: 0.875rem;
   transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    font-size: 1rem;
+    min-height: 44px;
+  }
 
   &:focus {
     outline: none;
@@ -104,12 +143,17 @@ const Select = styled.select`
   color: ${props => props.theme.text};
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  width: 100%;
 
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    font-size: 1rem;
+    min-height: 44px;
+    
+    option {
+      font-size: 1rem;
+      padding: 0.5rem;
+    }
   }
 `;
 
@@ -122,38 +166,49 @@ const TextArea = styled.textarea`
   font-size: 0.875rem;
   min-height: 120px;
   resize: vertical;
-  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
 
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 2px ${props => props.theme.primaryAlpha};
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    font-size: 1rem;
+    min-height: 100px;
   }
 `;
 
 const Preview = styled.div`
   position: relative;
-  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    max-width: 200px;
+  }
   
   img {
-    max-width: 200px;
-    border-radius: 4px;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
   }
   
   button {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
-    border-radius: 50%;
-    padding: 0.25rem;
-    cursor: pointer;
-    color: white;
+    top: -8px;
+    right: -8px;
+    padding: 4px;
+    
+    @media (max-width: 768px) {
+      padding: 2px;
+      top: -4px;
+      right: -4px;
+      
+      svg {
+        width: 12px;
+        height: 12px;
+      }
+    }
   }
 `;
 
@@ -185,17 +240,37 @@ const ImagePreview = styled.div`
 `;
 
 const CoverDropZone = styled(DropZone)`
-  height: 300px;
+  height: 200px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   margin-bottom: 2rem;
-  background: ${props => props.theme.secondaryBackground};
   
   img {
-    max-height: 250px;
+    max-height: 100px;
+    max-width: 200px;
+    width: auto;
     object-fit: contain;
+  }
+  
+  @media (max-width: 768px) {
+    height: 160px;
+    margin-bottom: 1rem;
+    
+    img {
+      max-height: 100px;
+      max-width: 160px;
+    }
+  }
+  
+  svg {
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    margin: 0.5rem 0;
   }
 `;
 
@@ -235,8 +310,11 @@ const genres = [
 const GenreSection = styled.div`
   border: 1px solid ${props => props.theme.borderLight};
   border-radius: 8px;
-  background: ${props => props.theme.background};
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    max-height: none;
+  }
 `;
 
 const GenreHeader = styled.div`
@@ -245,33 +323,66 @@ const GenreHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  color: ${props => props.theme.text};
-  transition: all 0.2s ease;
+  min-height: 44px;
   
-  &:hover {
-    background: ${props => props.theme.backgroundAlt};
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    font-size: 0.875rem;
   }
 `;
 
 const GenreList = styled.div`
-  display: ${props => props.isExpanded ? 'grid' : 'none'};
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 0.5rem;
-  padding: 0.75rem;
-  max-height: 200px;
+  padding: 0.5rem;
+  background: ${props => props.theme.background};
+  height: ${props => props.isExpanded ? 'auto' : '0'};
+  max-height: ${props => props.isExpanded ? '400px' : '0'};
   overflow-y: auto;
+  transition: all 0.3s ease;
+  opacity: ${props => props.isExpanded ? '1' : '0'};
+  visibility: ${props => props.isExpanded ? 'visible' : 'hidden'};
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    padding: ${props => props.isExpanded ? '0.5rem' : '0'};
+    max-height: ${props => props.isExpanded ? '200px' : '0'};
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: ${props => props.theme.background};
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.border};
+    border-radius: 4px;
+  }
 `;
 
 const GenreItem = styled.div`
   padding: 0.5rem;
   border-radius: 4px;
+  text-align: center;
   cursor: pointer;
   background: ${props => props.isSelected ? props.theme.primary + '20' : 'transparent'};
-  color: ${props => props.isSelected ? props.theme.primary : props.theme.text};
-  border: 1px solid ${props => props.isSelected ? props.theme.primary : 'transparent'};
+  border: 1px solid ${props => props.isSelected ? props.theme.primary : props.theme.borderLight};
   
-  &:hover {
-    background: ${props => props.isSelected ? props.theme.primary + '30' : props.theme.background};
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  &:active {
+    background: ${props => props.theme.primary + '40'};
   }
 `;
 

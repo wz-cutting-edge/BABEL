@@ -9,6 +9,11 @@ const CarouselWrapper = styled.div`
   height: 400px;
   overflow: hidden;
   margin: 2rem 0;
+  
+  @media (max-width: 768px) {
+    height: 300px;
+    margin: 1rem 0;
+  }
 `;
 
 const CarouselTrack = styled.div`
@@ -23,6 +28,12 @@ const CarouselItem = styled.div`
   padding: 1rem;
   position: relative;
   cursor: pointer;
+  
+  @media (max-width: 768px) {
+    flex: 0 0 250px;
+    height: 300px;
+    padding: 0.5rem;
+  }
   
   img {
     width: 100%;
@@ -64,6 +75,11 @@ const CarouselButton = styled.button`
   justify-content: center;
   cursor: pointer;
   z-index: 2;
+  
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+  }
   
   &:left {
     left: 1rem;

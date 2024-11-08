@@ -13,6 +13,10 @@ const ProfileWrapper = styled.div`
   padding: 6rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 4rem 1rem 1rem;
+  }
 `;
 
 const ProfileHeader = styled.div`
@@ -29,13 +33,20 @@ const ProfileHeader = styled.div`
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 2rem;
+    padding: 1.5rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
   }
 `;
 
 const AvatarSection = styled.div`
   position: relative;
   flex-shrink: 0;
+  
+  @media (max-width: 768px) {
+    width: 120px;
+    height: 120px;
+  }
 `;
 
 const Avatar = styled.img`
@@ -45,16 +56,22 @@ const Avatar = styled.img`
   object-fit: cover;
   border: 4px solid ${props => props.theme.background};
   box-shadow: ${props => props.theme.shadowLg};
+  
+  @media (max-width: 768px) {
+    width: 120px;
+    height: 120px;
+    border-width: 3px;
+  }
 `;
 
 const AvatarUpload = styled.label`
   position: absolute;
-  bottom: 4px;
-  right: 4px;
+  bottom: 8px;
+  right: 8px;
   background: ${props => props.theme.primary};
   color: white;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -62,14 +79,41 @@ const AvatarUpload = styled.label`
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: ${props => props.theme.shadowMd};
-
-  &:hover {
-    background: ${props => props.theme.primaryHover};
-    transform: scale(1.05);
-  }
-
+  
   input {
-    display: none;
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  
+  @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
+    bottom: 4px;
+    right: 4px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    width: 36px;
+    height: 36px;
+    bottom: 2px;
+    right: 2px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  &:active {
+    transform: scale(0.95);
+    background: ${props => props.theme.primaryHover};
   }
 `;
 
@@ -98,6 +142,12 @@ const Stats = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1.25rem;
   margin-top: 1.5rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
 `;
 
 const StatCard = styled.div`
@@ -108,22 +158,22 @@ const StatCard = styled.div`
   border: 1px solid ${props => props.theme.borderLight};
   transition: all 0.2s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${props => props.theme.shadowMd};
-  }
-
-  h3 {
-    font-size: 1.75rem;
-    color: ${props => props.theme.primary};
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-
-  p {
-    color: ${props => props.theme.textSecondary};
-    font-size: 0.875rem;
-    font-weight: 500;
+  @media (max-width: 768px) {
+    padding: 1rem;
+    
+    h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    p {
+      font-size: 0.8rem;
+    }
+    
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
   }
 `;
 
@@ -134,6 +184,12 @@ const TabsContainer = styled.div`
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: ${props => props.theme.shadowSm};
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
 `;
 
 const TabList = styled.div`
@@ -142,6 +198,18 @@ const TabList = styled.div`
   border-bottom: 1px solid ${props => props.theme.borderLight};
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.25rem;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 `;
 
 const Tab = styled.button`
@@ -156,14 +224,16 @@ const Tab = styled.button`
   align-items: center;
   gap: 0.5rem;
   font-weight: 500;
+  white-space: nowrap;
 
-  &:hover {
-    color: ${props => props.theme.primary};
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
+  @media (max-width: 768px) {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 `;
 
@@ -176,63 +246,75 @@ const PostsContainer = styled.div`
 
 const CollectionsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0.5rem;
+  }
 `;
 
 const CollectionCard = styled.div`
-  background: ${props => props.theme.secondaryBackground};
-  padding: 1.5rem;
+  background: ${props => props.theme.surfaceColor};
+  border: 1px solid ${props => props.theme.borderLight};
   border-radius: 12px;
+  padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid ${props => props.theme.borderLight};
-  box-shadow: ${props => props.theme.shadowSm};
-  position: relative;
-  overflow: hidden;
-
-  &:hover {
-    transform: translateY(-4px);
-    border-color: ${props => props.theme.primary}50;
-    box-shadow: ${props => props.theme.shadowLg};
-  }
-
-  h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    color: ${props => props.theme.text};
-  }
-
-  p {
-    color: ${props => props.theme.textSecondary};
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
+  transition: all 0.2s ease;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
+    
+    &:hover {
+      transform: none;
+      box-shadow: ${props => props.theme.shadowSm};
+    }
   }
 `;
 
 const CollectionPreview = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.25rem;
+  }
 `;
 
 const PreviewThumbnail = styled.div`
-  width: 100%;
-  height: 80px;
-  background-image: url(${props => props.image});
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: ${props => props.image ? `url(${props.image})` : props.theme.backgroundAlt};
   background-size: cover;
   background-position: center;
-  border-radius: 6px;
-  background-color: ${props => props.theme.background};
   display: flex;
   align-items: center;
   justify-content: center;
-
+  
   svg {
     color: ${props => props.theme.textSecondary};
     opacity: 0.5;
+  }
+  
+  @media (max-width: 768px) {
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
 `;
 
@@ -241,6 +323,15 @@ const MediaGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const MediaCard = styled.div`
@@ -251,8 +342,18 @@ const MediaCard = styled.div`
   cursor: pointer;
   transition: transform 0.2s;
 
-  &:hover {
-    transform: translateY(-2px);
+  @media (max-width: 768px) {
+    &:hover {
+      transform: none;
+    }
+    
+    h3 {
+      font-size: 0.9rem;
+    }
+    
+    small {
+      font-size: 0.75rem;
+    }
   }
 `;
 
@@ -273,8 +374,16 @@ const RemoveButton = styled.button`
   transition: background-color 0.2s;
   z-index: 1;
 
-  &:hover {
-    background: ${props => props.theme.error};
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    top: 6px;
+    right: 6px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
   }
 `;
 
@@ -288,13 +397,8 @@ const MediaThumbnail = styled.div`
   overflow: hidden;
   position: relative;
 
-  svg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 2rem;
+  @media (max-width: 768px) {
+    height: 160px;
   }
 `;
 

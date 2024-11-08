@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun, Settings, HelpCircle, LogIn, UserPlus } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun, Settings, HelpCircle, LogIn, UserPlus, Menu, X } from 'lucide-react';
 import { auth, db } from '../../services/firebase/config';
 import { doc, getDoc, onSnapshot, query, collection, where } from 'firebase/firestore';
 import {
@@ -16,7 +16,8 @@ import {
   DropdownHeader,
   LogoLink,
   NavContainer,
-  RegisterButton
+  RegisterButton,
+  MobileMenuButton
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 import { signOut } from 'firebase/auth';
@@ -32,6 +33,8 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
   const navigate = useNavigate();
   const [supportTickets, setSupportTickets] = useState([]);
   const [hasUnreadTickets, setHasUnreadTickets] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -139,6 +142,11 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
     </Dropdown>
   );
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
   return (
     <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
       <Container>
@@ -149,12 +157,37 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
           </LogoLink>
         </NavGroup>
         
+        <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </MobileMenuButton>
+
         <NavGroup className="nav-links">
           <NavContainer>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/search">Search</NavLink>
             <NavLink to="/collections">Collections</NavLink>
             <NavLink to="/forums">Forums</NavLink>
+          </NavContainer>
+        </NavGroup>
+        
+        <NavGroup className="mobile-nav" isOpen={isMobileMenuOpen}>
+          <NavContainer>
+            <NavLink to="/">
+              <BookOpen size={20} />
+              <span>Home</span>
+            </NavLink>
+            <NavLink to="/search">
+              <Search size={20} />
+              <span>Search</span>
+            </NavLink>
+            <NavLink to="/collections">
+              <BookMarked size={20} />
+              <span>Collections</span>
+            </NavLink>
+            <NavLink to="/forums">
+              <MessageSquare size={20} />
+              <span>Forums</span>
+            </NavLink>
           </NavContainer>
         </NavGroup>
         

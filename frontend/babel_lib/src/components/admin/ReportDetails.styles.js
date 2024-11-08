@@ -94,6 +94,7 @@ export const StatusBadge = styled.span`
   font-size: 0.875rem;
   background: ${props => 
     props.status === 'resolved' ? '#10B981' :
+    props.status === 'pending' && props.contentDeleted ? '#6B7280' :
     props.status === 'pending' ? '#F59E0B' :
     '#EF4444'};
   color: white;

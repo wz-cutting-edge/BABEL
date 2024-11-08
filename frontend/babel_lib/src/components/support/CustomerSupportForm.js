@@ -8,6 +8,13 @@ const FormWrapper = styled.div`
   padding: 6rem 2rem 2rem;
   max-width: 600px;
   margin: 0 auto;
+  height: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    padding: 4rem 1rem 1rem;
+  }
 `;
 
 const Form = styled.form`
@@ -15,14 +22,56 @@ const Form = styled.form`
   flex-direction: column;
   gap: 1.5rem;
   padding: 2rem;
-  background: ${props => props.theme.secondaryBackground};
+  background: ${props => props.theme.surfaceColor};
   border-radius: 8px;
+  border: 1px solid ${props => props.theme.borderLight};
+  margin-bottom: 2rem; // Add space at bottom for scrolling
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 1rem;
+  }
+`;
+
+const FormContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: calc(100vh - 300px); // Adjust based on your header height
+  overflow-y: auto;
+  padding-right: 0.5rem; // Space for scrollbar
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${props => props.theme.background};
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.border};
+    border-radius: 4px;
+  }
+  
+  @media (max-width: 768px) {
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
 `;
 
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  
+  label {
+    @media (max-width: 768px) {
+      font-size: 0.875rem;
+    }
+  }
 `;
 
 const Input = styled.input`
@@ -31,6 +80,13 @@ const Input = styled.input`
   border-radius: 4px;
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 `;
 
 const TextArea = styled.textarea`
@@ -40,6 +96,13 @@ const TextArea = styled.textarea`
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
   min-height: 150px;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+    min-height: 120px;
+  }
 `;
 
 const Button = styled.button`
@@ -57,6 +120,16 @@ const Button = styled.button`
   &:hover {
     opacity: 0.9;
   }
+  
+  @media (max-width: 768px) {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
 `;
 
 const Select = styled.select`
@@ -65,6 +138,13 @@ const Select = styled.select`
   border-radius: 4px;
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 `;
 
 const CustomerSupportForm = () => {
@@ -130,7 +210,7 @@ const CustomerSupportForm = () => {
     switch (ticketType) {
       case 'request_media':
         return (
-          <>
+          <FormContent>
             <FormGroup>
               <label>Title *</label>
               <Input
@@ -156,11 +236,11 @@ const CustomerSupportForm = () => {
               </Select>
             </FormGroup>
             {/* Add other media request fields */}
-          </>
+          </FormContent>
         );
       case 'other':
         return (
-          <>
+          <FormContent>
             <FormGroup>
               <label>Issue Type *</label>
               <Input
@@ -171,7 +251,7 @@ const CustomerSupportForm = () => {
               />
             </FormGroup>
             {/* Add other issue fields */}
-          </>
+          </FormContent>
         );
       // Add cases for 'report_bug' and 'appeal_ban'
     }
@@ -181,34 +261,36 @@ const CustomerSupportForm = () => {
     <FormWrapper>
       <h2>Customer Support</h2>
       <Form onSubmit={handleSubmit}>
-        <FormGroup>
-          <label>Request Type *</label>
-          <Select
-            value={ticketType}
-            onChange={(e) => setTicketType(e.target.value)}
-            required
-          >
-            <option value="">Select type...</option>
-            <option value="request_media">Request Media</option>
-            <option value="report_bug">Report Bug</option>
-            <option value="appeal_ban">Appeal Ban</option>
-            <option value="other">Other</option>
-          </Select>
-        </FormGroup>
-        {renderFormFields()}
-        <FormGroup>
-          <label>Description *</label>
-          <TextArea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            required
-          />
-        </FormGroup>
-        <Button type="submit">
-          <MessageCircle size={20} />
-          Submit Ticket
-        </Button>
+        <FormContent>
+          <FormGroup>
+            <label>Request Type *</label>
+            <Select
+              value={ticketType}
+              onChange={(e) => setTicketType(e.target.value)}
+              required
+            >
+              <option value="">Select type...</option>
+              <option value="request_media">Request Media</option>
+              <option value="report_bug">Report Bug</option>
+              <option value="appeal_ban">Appeal Ban</option>
+              <option value="other">Other</option>
+            </Select>
+          </FormGroup>
+          {renderFormFields()}
+          <FormGroup>
+            <label>Description *</label>
+            <TextArea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              required
+            />
+          </FormGroup>
+          <Button type="submit">
+            <MessageCircle size={20} />
+            Submit Ticket
+          </Button>
+        </FormContent>
       </Form>
     </FormWrapper>
   );

@@ -18,6 +18,12 @@ const FooterContent = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
+  
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
 `;
 
 const FooterSection = styled.div`
@@ -53,12 +59,24 @@ const FooterLink = styled(Link)`
   &:hover svg {
     color: ${props => props.theme.primary};
   }
+
+  @media (max-width: 768px) {
+    justify-content: center;
+    
+    &:hover {
+      transform: none;
+    }
+  }
 `;
 
 const SocialLinks = styled.div`
   display: flex;
   gap: 1rem;
   margin-top: 0.5rem;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
 `;
 
 const Footer = () => {

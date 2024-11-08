@@ -5,6 +5,15 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    font-size: 16px;
+    
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
   }
 
   body {
@@ -14,6 +23,7 @@ const GlobalStyle = createGlobalStyle`
     color: ${props => props.theme.text};
     line-height: 1.5;
     transition: background-color 0.2s ease;
+    overflow-x: hidden;
   }
 
   a {

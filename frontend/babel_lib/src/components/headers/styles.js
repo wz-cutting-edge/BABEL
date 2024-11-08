@@ -19,17 +19,78 @@ export const HeaderWrapper = styled.header`
 export const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem 2rem;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: transparent;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 `;
 
 export const NavGroup = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
+
+  &.nav-links {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  &.mobile-nav {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: ${props => props.theme.background};
+    padding: 1rem;
+    border-bottom: 1px solid ${props => props.theme.borderLight};
+    z-index: 1000;
+    
+    @media (max-width: 768px) {
+      display: ${props => (props.isOpen ? 'flex' : 'none')};
+    }
+  }
+
+  &.actions-group {
+    @media (max-width: 768px) {
+      gap: 0.5rem;
+    }
+  }
+`;
+
+export const MobileMenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  color: ${props => props.theme.text};
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
+export const NavContainer = styled.nav`
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.5rem;
+  }
 `;
 
 export const NavLink = styled(Link)`
@@ -37,7 +98,15 @@ export const NavLink = styled(Link)`
   color: ${props => props.theme.text};
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  transition: all 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.2s ease;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
 
   &:hover {
     background: ${props => props.theme.backgroundAlt};
@@ -180,12 +249,6 @@ export const NotificationDot = styled.span`
   border-radius: 50%;
   width: 10px;
   height: 10px;
-`;
-
-export const NavContainer = styled.nav`
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
 `;
 
 export const TicketNotification = styled.span`

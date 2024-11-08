@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, Search, LogIn, UserPlus, Sun, Moon } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, Search, LogIn, UserPlus, Sun, Moon, Menu, X } from 'lucide-react';
 import {
   HeaderWrapper,
   Container,
@@ -10,13 +10,16 @@ import {
   ThemeToggleButton,
   LogoLink,
   NavContainer,
-  RegisterButton
+  RegisterButton,
+  MobileMenuButton
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 
 const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const scrollDirection = useScrollDirection();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +28,10 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <HeaderWrapper isScrolled={isScrolled} hide={scrollDirection === 'down'}>
@@ -36,10 +43,35 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
           </LogoLink>
         </NavGroup>
         
+        <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </MobileMenuButton>
+        
         <NavGroup className="nav-links">
           <NavContainer>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/search">Search</NavLink>
+          </NavContainer>
+        </NavGroup>
+        
+        <NavGroup className="mobile-nav" isOpen={isMobileMenuOpen}>
+          <NavContainer>
+            <NavLink to="/" onClick={() => setIsMobileMenuOpen(false)}>
+              <BookOpen size={20} />
+              <span>Home</span>
+            </NavLink>
+            <NavLink to="/search" onClick={() => setIsMobileMenuOpen(false)}>
+              <Search size={20} />
+              <span>Search</span>
+            </NavLink>
+            <NavLink to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+              <LogIn size={20} />
+              <span>Login</span>
+            </NavLink>
+            <NavLink to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+              <UserPlus size={20} />
+              <span>Register</span>
+            </NavLink>
           </NavContainer>
         </NavGroup>
         

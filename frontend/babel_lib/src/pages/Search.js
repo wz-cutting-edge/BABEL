@@ -14,10 +14,18 @@ const SearchWrapper = styled.div`
   padding: 6rem 2rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 4rem 1rem 1rem;
+  }
 `;
 
 const SearchHeader = styled.div`
   margin-bottom: 3rem;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+  }
   
   h1 {
     font-size: 2.5rem;
@@ -26,6 +34,11 @@ const SearchHeader = styled.div`
     background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    
+    @media (max-width: 768px) {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+    }
   }
 `;
 
@@ -37,6 +50,12 @@ const SearchForm = styled.form`
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: ${props => props.theme.shadowMd};
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -48,6 +67,11 @@ const SearchInput = styled.input`
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
+  
+  @media (max-width: 768px) {
+    font-size: 16px; // Prevents zoom on iOS
+    padding: 0.625rem 1rem;
+  }
 
   &:focus {
     border-color: ${props => props.theme.primary};
@@ -78,6 +102,11 @@ const ResultsGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
   padding: 1rem 0;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 const MediaCard = styled.div`
@@ -88,10 +117,14 @@ const MediaCard = styled.div`
   border: 2px solid ${props => props.theme.borderLight};
   box-shadow: ${props => props.theme.shadowSm};
 
-  &:hover {
-    transform: translateY(-4px);
-    border-color: ${props => props.theme.primary}50;
-    box-shadow: ${props => props.theme.shadowLg};
+  @media (max-width: 768px) {
+    border-width: 1px;
+    
+    &:hover {
+      transform: none;
+      border-color: ${props => props.theme.borderLight};
+      box-shadow: ${props => props.theme.shadowSm};
+    }
   }
 `;
 
@@ -110,10 +143,18 @@ const MediaThumbnail = styled.div`
     color: ${props => props.theme.textSecondary};
     opacity: 0.5;
   }
+
+  @media (max-width: 768px) {
+    height: 200px;
+  }
 `;
 
 const MediaInfo = styled.div`
   padding: 1.5rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const MediaTitle = styled.h3`
@@ -138,6 +179,11 @@ const MediaMeta = styled.div`
 const MediaActions = styled.div`
   display: flex;
   gap: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
 const ActionButton = styled.button`
@@ -148,6 +194,12 @@ const ActionButton = styled.button`
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  
+  @media (max-width: 768px) {
+    padding: 0.625rem;
+    font-size: 0.875rem;
+    width: 100%;
+  }
   
   ${props => props.primary ? `
     background: ${props.theme.primary};

@@ -11,6 +11,10 @@ const PageWrapper = styled.div`
   padding: 6rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 4rem 1rem 1rem;
+  }
 `;
 
 const ReportsTable = styled.table`
@@ -19,7 +23,13 @@ const ReportsTable = styled.table`
   margin-top: 2rem;
   background: ${props => props.theme.secondaryBackground};
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  display: block;
+  
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
 `;
 
 const Th = styled.th`
@@ -27,11 +37,20 @@ const Th = styled.th`
   text-align: left;
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  white-space: nowrap;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+  }
 `;
 
 const Td = styled.td`
   padding: 1rem;
   border-top: 1px solid ${props => props.theme.border};
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+  }
 `;
 
 const StatusBadge = styled.span`
@@ -147,12 +166,11 @@ const UserReports = () => {
 
       // Delete the reported content
       await deleteDoc(doc(db, report.contentType + 's', report.contentId));
-      
-      // Update the report status to resolved
+
+      // Update the report to mark content as deleted
       await updateDoc(doc(db, 'reports', report.id), {
-        status: 'resolved',
-        resolvedAt: serverTimestamp(),
-        resolution: 'content_removed'
+        contentDeleted: true,
+        deletedAt: serverTimestamp()
       });
 
       // Create notification for the content owner

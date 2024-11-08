@@ -22,6 +22,12 @@ const FeedWrapper = styled.div`
   max-width: 600px;
   margin: 64px auto 0;
   padding: 2rem;
+  
+  @media (max-width: 768px) {
+    margin-top: 48px;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
 `;
 
 const PostFeed = React.memo(({ userId }) => {

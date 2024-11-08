@@ -11,6 +11,10 @@ const PageWrapper = styled.div`
   padding: 6rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 4rem 1rem 1rem;
+  }
 `;
 
 const SupportGrid = styled.div`
@@ -18,10 +22,11 @@ const SupportGrid = styled.div`
   grid-template-columns: 300px 1fr;
   gap: 2rem;
   height: calc(100vh - 350px);
-  margin-bottom: 2rem;
   
   @media (max-width: 768px) {
-    height: calc(100vh - 400px);
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    height: auto;
   }
 `;
 
@@ -30,6 +35,10 @@ const TicketList = styled.div`
   border-radius: 8px;
   overflow-y: auto;
   max-height: calc(100vh - 450px);
+  
+  @media (max-width: 768px) {
+    max-height: 300px;
+  }
 `;
 
 const TicketItem = styled.div`
@@ -52,6 +61,11 @@ const ChatWindow = styled.div`
   height: 100%;
   max-height: calc(100vh - 300px);
   overflow: hidden;
+  
+  @media (max-width: 768px) {
+    height: calc(100vh - 400px);
+    max-height: none;
+  }
 `;
 
 const ChatHeader = styled.div`
@@ -80,13 +94,13 @@ const Message = styled.div`
   padding: 0.75rem;
   border-radius: 8px;
   max-width: 70%;
-  ${props => props.isAdmin ? `
-    background-color: ${props.theme.primary}20;
-    margin-left: auto;
-  ` : `
-    background-color: ${props.theme.secondaryBackground};
-    margin-right: auto;
-  `}
+  word-break: break-word;
+  
+  @media (max-width: 768px) {
+    max-width: 85%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
 `;
 
 const ReplyBox = styled.div`
@@ -151,9 +165,31 @@ const FormGroup = styled.div`
 `;
 
 const FormContent = styled.div`
-  padding: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   overflow-y: auto;
-  max-height: calc(100vh - 350px);
+  height: 100%;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${props => props.theme.background};
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.border};
+    border-radius: 4px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 1rem;
+  }
 `;
 
 const formatTimestamp = (timestamp) => {

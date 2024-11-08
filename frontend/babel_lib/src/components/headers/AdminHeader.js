@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { BookOpen, Moon, Sun, LogOut, Users, Flag, Upload, User, Layout, MessageSquare, Settings } from 'lucide-react';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, Moon, Sun, LogOut, Users, Flag, Upload, User, Layout, MessageSquare, Settings, Menu, X } from 'lucide-react';
 import { auth } from '../../services/firebase/config';
 import { signOut } from 'firebase/auth';
 import {
@@ -13,7 +13,8 @@ import {
   DropdownContent,
   DropdownItem,
   ThemeToggleButton,
-  NavContainer
+  NavContainer,
+  MobileMenuButton
 } from './styles';
 import useScrollDirection from '../../hooks/useScrollDirection';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,10 +24,12 @@ import { doc, getDoc, onSnapshot, query, collection, where } from 'firebase/fire
 const AdminHeader = ({ toggleTheme, isDarkMode }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const scrollDirection = useScrollDirection();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,6 +50,10 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
 
     return () => unsubscribe();
   }, [user]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -76,6 +83,10 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
           </Link>
         </NavGroup>
 
+        <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </MobileMenuButton>
+
         <NavGroup className="nav-links">
           <NavContainer>
             <StyledNavLink to="/admin">
@@ -99,6 +110,35 @@ const AdminHeader = ({ toggleTheme, isDarkMode }) => {
               <span>Media Uploader</span>
             </StyledNavLink>
             <StyledNavLink to={`/profile/${user?.uid}`}>
+              <User size={20} />
+              <span>Profile</span>
+            </StyledNavLink>
+          </NavContainer>
+        </NavGroup>
+
+        <NavGroup className="mobile-nav" isOpen={isMobileMenuOpen}>
+          <NavContainer>
+            <StyledNavLink to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+              <Layout size={20} />
+              <span>Dashboard</span>
+            </StyledNavLink>
+            <StyledNavLink to="/forums" onClick={() => setIsMobileMenuOpen(false)}>
+              <MessageSquare size={20} />
+              <span>Forums</span>
+            </StyledNavLink>
+            <StyledNavLink to="/admin/support" onClick={() => setIsMobileMenuOpen(false)}>
+              <Users size={20} />
+              <span>Customer Support</span>
+            </StyledNavLink>
+            <StyledNavLink to="/admin/reports" onClick={() => setIsMobileMenuOpen(false)}>
+              <Flag size={20} />
+              <span>User Reports</span>
+            </StyledNavLink>
+            <StyledNavLink to="/admin/upload" onClick={() => setIsMobileMenuOpen(false)}>
+              <Upload size={20} />
+              <span>Media Uploader</span>
+            </StyledNavLink>
+            <StyledNavLink to={`/profile/${user?.uid}`} onClick={() => setIsMobileMenuOpen(false)}>
               <User size={20} />
               <span>Profile</span>
             </StyledNavLink>
