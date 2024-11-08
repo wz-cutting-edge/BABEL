@@ -283,7 +283,7 @@ const MediaViewer = () => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isControlsRetracted, setIsControlsRetracted] = useState(false);
   const [infoRetracted, setInfoRetracted] = useState(false);
-  const { setIsViewerRetracted } = useViewer();
+  const { isViewerRetracted, setIsViewerRetracted } = useViewer();
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -418,7 +418,6 @@ const MediaViewer = () => {
   const toggleControls = (e) => {
     e.stopPropagation();
     setIsControlsRetracted(prev => !prev);
-    setIsViewerRetracted(prev => !prev);
   };
 
   const renderControls = () => (
@@ -442,19 +441,15 @@ const MediaViewer = () => {
       >
         Next
       </StyledButton>
-      {!isMobile && (
-        <>
-          <Divider />
-          <StyledButton onClick={() => setDoublePage(!doublePage)}>
-            {doublePage ? '1 Page' : '2 Page'}
-          </StyledButton>
-        </>
-      )}
       <StyledButton onClick={() => setZoom(zoom + 0.2)}>
         +
       </StyledButton>
       <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))}>
         -
+      </StyledButton>
+      <Divider />
+      <StyledButton onClick={() => setIsViewerRetracted(prev => !prev)}>
+        {isViewerRetracted ? 'Show Header' : 'Hide Header'}
       </StyledButton>
     </Controls>
   );
@@ -527,12 +522,16 @@ const MediaViewer = () => {
                       pageNumber={pageNumber} 
                       scale={zoom}
                       width={window.innerWidth > 768 ? undefined : window.innerWidth - 32}
+                      renderAnnotationLayer={false}
+                      renderTextLayer={true}
                     />
                     {pageNumber + 1 <= numPages && (
                       <Page 
                         pageNumber={pageNumber + 1} 
                         scale={zoom}
                         width={window.innerWidth > 768 ? undefined : window.innerWidth - 32}
+                        renderAnnotationLayer={false}
+                        renderTextLayer={true}
                       />
                     )}
                   </div>
@@ -541,6 +540,8 @@ const MediaViewer = () => {
                     pageNumber={pageNumber} 
                     scale={zoom}
                     width={window.innerWidth > 768 ? undefined : window.innerWidth - 32}
+                    renderAnnotationLayer={false}
+                    renderTextLayer={true}
                   />
                 )}
               </Document>
@@ -548,22 +549,7 @@ const MediaViewer = () => {
             <Controls 
               isRetracted={isControlsRetracted}
             >
-              <TabIndicator 
-                onClick={toggleControls}
-                isRetracted={isControlsRetracted}
-              />
-              <FavoriteButton isFavorited={isFavorited} onClick={handleFavorite}>
-                {isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
-              </FavoriteButton>
-              <StyledButton onClick={loadBookmark}>
-                Load Bookmark
-              </StyledButton>
-              <StyledButton onClick={() => setZoom(zoom + 0.2)}>
-                +
-              </StyledButton>
-              <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))}>
-                -
-              </StyledButton>
+              {renderControls()}
             </Controls>
           </>
         )}
