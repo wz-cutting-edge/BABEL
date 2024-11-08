@@ -64,7 +64,7 @@ const PDFWrapper = styled.div`
 
 const Controls = styled.div`
   position: fixed;
-  bottom: ${props => props.isRetracted ? '-80px' : '2rem'};
+  bottom: ${props => props.isRetracted ? '-60px' : '2rem'};
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -101,18 +101,18 @@ const MobileControlGroup = styled.div`
 
 const TabIndicator = styled.div`
   position: absolute;
-  top: -24px;
+  top: ${props => props.isRetracted ? '36px' : '-24px'};
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
   height: 24px;
   background: ${props => props.theme.secondaryBackground};
-  border-radius: 8px 8px 0 0;
+  border-radius: ${props => props.isRetracted ? '0 0 8px 8px' : '8px 8px 0 0'};
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  box-shadow: ${props => props.isRetracted ? '0 2px 10px rgba(0,0,0,0.1)' : '0 -2px 10px rgba(0,0,0,0.1)'};
   
   &::after {
     content: '';
