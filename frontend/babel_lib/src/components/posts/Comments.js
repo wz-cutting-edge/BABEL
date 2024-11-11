@@ -208,7 +208,6 @@ const Comments = ({ postId, isAdmin, onCommentCountChange }) => {
 
       await batch.commit();
       setNewComment('');
-      onCommentCountChange(1);
     } catch (error) {
       console.error('Error adding comment:', error);
     }

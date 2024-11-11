@@ -214,6 +214,20 @@ const Post = React.memo(React.forwardRef(({ post, onDelete, isAdmin, authorData 
     checkLike();
   }, [post.id, user]);
 
+  // Add this useEffect after the existing useEffects
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'posts', post.id), (doc) => {
+      if (doc.exists()) {
+        setPostData({
+          id: doc.id,
+          ...doc.data()
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [post.id]);
+
   const handleLike = async () => {
     if (!user) {
       navigate('/login');
