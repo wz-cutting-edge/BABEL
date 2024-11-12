@@ -455,6 +455,10 @@ const MediaViewer = () => {
           <StyledButton onClick={() => setZoom(Math.max(0.6, zoom - 0.2))}>
             -
           </StyledButton>
+          <Divider />
+          <StyledButton onClick={() => setDoublePage(!doublePage)}>
+            {doublePage ? 'Single Page' : 'Double Page'}
+          </StyledButton>
         </>
       )}
       <Divider />
