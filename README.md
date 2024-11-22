@@ -134,6 +134,7 @@ We welcome contributions to enhance BABEL. To contribute:
 ### Original Contributors
 - William Zheng
 - Brooke Harris
+- Meissen Hsu
 
 ## License
 
