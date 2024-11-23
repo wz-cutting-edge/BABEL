@@ -256,24 +256,31 @@ const genres = [
 const Search = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     type: 'all',
     genre: 'all'
   });
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [showAddToCollection, setShowAddToCollection] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [userCollections, setUserCollections] = useState([]);
   const { user } = useAuth();
 
-  const searchHandler = useCallback(async (searchTerm) => {
+  const searchHandler = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setResults([]);
 
     try {
-      const searchResults = await searchMedia(searchTerm, filters.type);
+      if (!query.trim()) {
+        setError('Please enter a search term');
+        setLoading(false);
+        return;
+      }
+
+      const searchResults = await searchMedia(query, filters.type);
       const filteredResults = filters.genre === 'all' 
         ? searchResults
         : searchResults.filter(item => 
@@ -281,6 +288,12 @@ const Search = () => {
               ? item.genres.includes(filters.genre)
               : item.genre === filters.genre
           );
+
+      if (filteredResults.length === 0) {
+        setError('No results found. Try different search terms or filters.');
+        return;
+      }
+
       setResults(filteredResults);
     } catch (err) {
       setError('Failed to fetch search results');
@@ -288,15 +301,7 @@ const Search = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters.type, filters.genre]);
-
-  const debouncedSearch = useDebounce(searchHandler, 500);
-
-  useEffect(() => {
-    if (query) {
-      debouncedSearch(query);
-    }
-  }, [query, debouncedSearch]);
+  }, [query, filters.type, filters.genre]);
 
   useEffect(() => {
     const fetchUserCollections = async () => {
@@ -340,7 +345,10 @@ const Search = () => {
     <SearchWrapper>
       <SearchHeader>
         <h1>Search</h1>
-        <SearchForm onSubmit={(e) => e.preventDefault()}>
+        <SearchForm onSubmit={(e) => {
+          e.preventDefault();
+          searchHandler();
+        }}>
           <SearchInput
             type="text"
             value={query}
@@ -367,7 +375,7 @@ const Search = () => {
               </option>
             ))}
           </StyledSelect>
-          <ActionButton onClick={() => searchHandler('')}>
+          <ActionButton type="submit">
             Enter
           </ActionButton>
         </SearchForm>
@@ -376,38 +384,40 @@ const Search = () => {
       {loading && <Loading />}
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
-      <ResultsGrid>
-        {results.map((item) => (
-          <MediaCard key={item.id}>
-            <MediaThumbnail style={{ backgroundImage: `url(${item.coverUrl})` }}>
-              {!item.coverUrl && (
-                item.type === 'book' ? <Book size={32} /> : <Video size={32} />
-              )}
-            </MediaThumbnail>
-            <MediaInfo>
-              <MediaTitle>{item.title}</MediaTitle>
-              <MediaMeta>
-                {item.type === 'book' ? <Book size={16} /> : <Video size={16} />}
-                <span>{item.author}</span>
-                {item.year && (
-                  <>
-                    <span>•</span>
-                    <span>{item.year}</span>
-                  </>
+      {results.length > 0 && (
+        <ResultsGrid>
+          {results.map((item) => (
+            <MediaCard key={item.id}>
+              <MediaThumbnail style={{ backgroundImage: `url(${item.coverUrl})` }}>
+                {!item.coverUrl && (
+                  item.type === 'book' ? <Book size={32} /> : <Video size={32} />
                 )}
-              </MediaMeta>
-              <MediaActions>
-                <ActionButton primary onClick={() => handleViewMedia(item)}>
-                  View
-                </ActionButton>
-                <ActionButton onClick={() => handleAddToCollection(item)}>
-                  Add to Collection
-                </ActionButton>
-              </MediaActions>
-            </MediaInfo>
-          </MediaCard>
-        ))}
-      </ResultsGrid>
+              </MediaThumbnail>
+              <MediaInfo>
+                <MediaTitle>{item.title}</MediaTitle>
+                <MediaMeta>
+                  {item.type === 'book' ? <Book size={16} /> : <Video size={16} />}
+                  <span>{item.author}</span>
+                  {item.year && (
+                    <>
+                      <span>•</span>
+                      <span>{item.year}</span>
+                    </>
+                  )}
+                </MediaMeta>
+                <MediaActions>
+                  <ActionButton primary onClick={() => handleViewMedia(item)}>
+                    View
+                  </ActionButton>
+                  <ActionButton onClick={() => handleAddToCollection(item)}>
+                    Add to Collection
+                  </ActionButton>
+                </MediaActions>
+              </MediaInfo>
+            </MediaCard>
+          ))}
+        </ResultsGrid>
+      )}
 
       {showAddToCollection && selectedMedia && (
         <AddToCollection
