@@ -60,6 +60,9 @@ export function AuthProvider({ children }) {
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
       const userData = userDoc.data();
       
+      // Add log message
+      console.log('Login successful');
+      
       // Check if user is admin and redirect accordingly
       if (userData?.role === 'admin') {
         navigate('/admin');
