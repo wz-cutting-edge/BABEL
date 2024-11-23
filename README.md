@@ -136,6 +136,7 @@ We welcome contributions to enhance BABEL. To contribute:
 - Brooke Harris
 - Meissen Hsu
 - Ify Ojiaku
+- Michelle Duong
 
 ## License
 
