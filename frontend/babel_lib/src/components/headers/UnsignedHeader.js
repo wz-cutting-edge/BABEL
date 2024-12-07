@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, Search, LogIn, UserPlus, Sun, Moon, Menu, X } from 'lucide-react';
+import { BookOpen, Search, LogIn, UserPlus, Sun, Moon, Menu, X, Film } from 'lucide-react';
 import {
   HeaderWrapper,
   Container,
@@ -51,6 +51,10 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
           <NavContainer>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/search">Search</NavLink>
+            <NavLink to="https://cinesage.com" target="_blank">
+              <Film size={20} />
+              <span>CINESAGE</span>
+            </NavLink>
           </NavContainer>
         </NavGroup>
         

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun, Settings, HelpCircle, LogIn, UserPlus, Menu, X } from 'lucide-react';
+import { BookOpen, Search, LogOut, User, BookMarked, MessageSquare, Moon, Sun, Settings, HelpCircle, LogIn, UserPlus, Menu, X, Film } from 'lucide-react';
 import { auth, db } from '../../services/firebase/config';
 import { doc, getDoc, onSnapshot, query, collection, where } from 'firebase/firestore';
 import {
@@ -173,6 +173,10 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
             <NavLink to="/search">Search</NavLink>
             <NavLink to="/collections">Collections</NavLink>
             <NavLink to="/forums">Forums</NavLink>
+            <NavLink to="https://cinesage.com" target="_blank">
+              <Film size={20} />
+              <span>CINESAGE</span>
+            </NavLink>
           </NavContainer>
         </NavGroup>
         
@@ -193,6 +197,10 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
             <NavLink to="/forums">
               <MessageSquare size={20} />
               <span>Forums</span>
+            </NavLink>
+            <NavLink to="https://cinesage.com" target="_blank">
+              <Film size={20} />
+              <span>CINESAGE</span>
             </NavLink>
           </NavContainer>
         </NavGroup>

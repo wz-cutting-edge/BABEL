@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { BookOpen, Github, Twitter } from 'lucide-react';
+import { BookOpen, Github, Twitter, Film } from 'lucide-react';
 
 const FooterWrapper = styled.footer`
   background-color: ${props => props.theme.surfaceColor};
@@ -96,6 +96,10 @@ const Footer = () => {
           <FooterLink to="/help">Help Center</FooterLink>
           <FooterLink to="/guidelines">Community Guidelines</FooterLink>
           <FooterLink to="/faq">FAQ</FooterLink>
+          <FooterLink to="https://cinesage.com" target="_blank">
+            <Film size={16} />
+            CINESAGE Movies
+          </FooterLink>
         </FooterSection>
 
         <FooterSection>
