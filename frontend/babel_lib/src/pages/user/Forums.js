@@ -19,6 +19,9 @@ const ForumsWrapper = styled.div`
   @media (max-width: 768px) {
     padding: 3rem 0 0.5rem;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 `;
 
@@ -53,33 +56,44 @@ const AdminBanner = styled.div`
 `;
 
 const SearchContainer = styled.div`
-  margin: 1rem auto;
   position: relative;
   max-width: 400px;
   width: 100%;
+  margin: 1rem auto;
+  padding: 0 1rem;
   
   @media (max-width: 768px) {
-    margin: 0;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 1000;
     background: ${props => props.theme.background};
-    padding: 0.5rem 1rem;
+    padding: 0.75rem;
+    margin: 0;
     width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    > * {
+      width: 100%;
+      max-width: 400px;
+    }
   }
 `;
 
 const SearchIcon = styled.div`
   position: absolute;
-  right: 0.75rem;
+  right: 1.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: ${props => props.theme.textSecondary};
   cursor: pointer;
   padding: 0.5rem;
+  z-index: 1002;
+  pointer-events: none;
   
   @media (max-width: 768px) {
-    right: 1.25rem;
+    right: calc(50% - 180px);
   }
 `;
 
@@ -93,6 +107,9 @@ const SearchInput = styled.input`
   font-size: 0.875rem;
   transition: all 0.2s ease;
   -webkit-appearance: none;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1001;
 
   &:focus {
     outline: none;
@@ -105,10 +122,13 @@ const SearchInput = styled.input`
   }
 
   @media (max-width: 768px) {
+    max-width: 400px;
     font-size: 16px;
-    padding: 0.625rem 1rem;
+    padding: 0.625rem 2.5rem 0.625rem 1rem;
     border-radius: 20px;
     background: ${props => props.theme.backgroundAlt};
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    touch-action: manipulation;
   }
 `;
 
@@ -123,7 +143,7 @@ const SearchResults = styled.div`
   margin-top: 0.5rem;
   max-height: 300px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1003;
   box-shadow: ${props => props.theme.shadowMd};
 
   @media (max-width: 768px) {
@@ -137,52 +157,59 @@ const SearchResults = styled.div`
     border-radius: 16px 16px 0 0;
     border-bottom: none;
     box-shadow: ${props => props.theme.shadowLg};
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 4px;
-      background: ${props => props.theme.borderLight};
-      border-radius: 2px;
-    }
   }
 `;
 
 const UserResult = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
   border-bottom: 1px solid ${props => props.theme.borderLight};
+
+  &:hover {
+    background: ${props => props.theme.backgroundAlt};
+  }
+
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .username {
+    font-weight: 500;
+    color: ${props => props.theme.text};
+  }
+
+  .email {
+    font-size: 0.875rem;
+    color: ${props => props.theme.textSecondary};
+  }
 
   @media (max-width: 768px) {
     padding: 1rem;
-    gap: 0.75rem;
     
     img {
       width: 48px;
       height: 48px;
     }
     
-    strong {
+    .username {
       font-size: 1rem;
-      margin-bottom: 0.25rem;
-      display: block;
     }
     
-    div {
+    .email {
       font-size: 0.875rem;
-      color: ${props => props.theme.textSecondary};
-    }
-    
-    &:active {
-      background: ${props => props.theme.backgroundAlt};
     }
   }
 `;
@@ -328,10 +355,13 @@ const Forums = () => {
           <SearchResults>
             {searchResults.map(user => (
               <UserResult key={user.id} onClick={() => handleUserClick(user.id)}>
-                <img src={user.photoURL || '/default-avatar.png'} alt={user.username} />
-                <div>
-                  <strong>{user.username}</strong>
-                  {user.email && <div>{user.email}</div>}
+                <img 
+                  src={user.photoURL || '/default-avatar.png'} 
+                  alt={user.username} 
+                />
+                <div className="user-info">
+                  <span className="username">{user.username}</span>
+                  {user.email && <span className="email">{user.email}</span>}
                 </div>
               </UserResult>
             ))}

@@ -150,9 +150,11 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Current user:', user);
     
-    if (!content.trim() || !user) return;
+    if (!content.trim() || !user || loading) return;
+
+    setLoading(true);
+    setError(null);
 
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -160,19 +162,6 @@ const CreatePost = () => {
         console.error('User document not found');
         return;
       }
-      
-      const userData = userDoc.data();
-      console.log('User data:', userData);
-      console.log('User ban status:', {
-        banned: userData.banned,
-        banEndDate: userData.banEndDate,
-        role: userData.role
-      });
-      console.log('Post data being sent:', {
-        content: content.trim(),
-        authorId: user.uid,
-        createdAt: serverTimestamp()
-      });
 
       const postData = {
         content: content.trim(),
@@ -194,8 +183,9 @@ const CreatePost = () => {
       setPreviewUrl('');
     } catch (error) {
       console.error('Error creating post:', error);
-      console.error('Error details:', error.code, error.message);
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -206,11 +196,12 @@ const CreatePost = () => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Share your thoughts with the community..."
+          disabled={loading}
         />
         {previewUrl && (
           <ImagePreview>
             <img src={previewUrl} alt="Preview" />
-            <button type="button" onClick={removeImage}>
+            <button type="button" onClick={removeImage} disabled={loading}>
               <X size={16} />
             </button>
           </ImagePreview>
@@ -222,10 +213,14 @@ const CreatePost = () => {
               accept="image/*"
               onChange={handleImageChange}
               style={{ display: 'none' }}
+              disabled={loading}
             />
-            <Image style={{ cursor: 'pointer' }} />
+            <Image style={{ cursor: loading ? 'not-allowed' : 'pointer' }} />
           </label>
-          <SubmitButton type="submit" disabled={loading || (!content.trim() && !selectedImage)}>
+          <SubmitButton 
+            type="submit" 
+            disabled={loading || (!content.trim() && !selectedImage)}
+          >
             {loading ? 'Posting...' : 'Post'}
           </SubmitButton>
         </ActionBar>
