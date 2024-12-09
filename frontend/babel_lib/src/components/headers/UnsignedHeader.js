@@ -51,7 +51,7 @@ const UnsignedHeader = ({ toggleTheme, isDarkMode }) => {
           <NavContainer>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/search">Search</NavLink>
-            <NavLink to="https://cinesage.com" target="_blank">
+            <NavLink to="https://swe-sixfold-test-148981190751.us-central1.run.app/" target="_blank">
               <Film size={20} />
               <span>CINESAGE</span>
             </NavLink>

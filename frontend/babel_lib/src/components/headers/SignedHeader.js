@@ -173,7 +173,7 @@ const SignedHeader = ({ toggleTheme, isDarkMode }) => {
             <NavLink to="/search">Search</NavLink>
             <NavLink to="/collections">Collections</NavLink>
             <NavLink to="/forums">Forums</NavLink>
-            <NavLink to="https://cinesage.com" target="_blank">
+            <NavLink to="https://swe-sixfold-test-148981190751.us-central1.run.app/" target="_blank">
               <Film size={20} />
               <span>CINESAGE</span>
             </NavLink>

@@ -96,7 +96,7 @@ const Footer = () => {
           <FooterLink to="/help">Help Center</FooterLink>
           <FooterLink to="/guidelines">Community Guidelines</FooterLink>
           <FooterLink to="/faq">FAQ</FooterLink>
-          <FooterLink to="https://cinesage.com" target="_blank">
+          <FooterLink to="https://swe-sixfold-test-148981190751.us-central1.run.app/" target="_blank">
             <Film size={16} />
             CINESAGE Movies
           </FooterLink>
